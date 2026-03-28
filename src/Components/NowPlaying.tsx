@@ -96,16 +96,17 @@ export default function NowPlaying(props: { state: PlaybackState }) {
           setPosition(props.state.position);
 
           try {
-            reportPlaybackStart({
-              body: {
-                CanSeek: false,
-                ItemId: props.state.item.Id,
-                IsPaused: false,
-                IsMuted: false,
-                PositionTicks: 0,
-                VolumeLevel: volume
-              }
-            });
+            if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
+              reportPlaybackStart({
+                body: {
+                  CanSeek: false,
+                  ItemId: props.state.item.Id,
+                  IsPaused: false,
+                  IsMuted: false,
+                  PositionTicks: 0,
+                  VolumeLevel: volume
+                }
+              });
           } catch (err) {}
         }
       } else {
@@ -187,16 +188,17 @@ export default function NowPlaying(props: { state: PlaybackState }) {
     if (!props.state.item) return;
 
     try {
-      reportPlaybackProgress({
-        body: {
-          CanSeek: false,
-          ItemId: props.state.item.Id,
-          IsPaused: !props.state.playing,
-          IsMuted: false,
-          PositionTicks: Math.floor(position * 10000),
-          VolumeLevel: volume
-        }
-      });
+      if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
+        reportPlaybackProgress({
+          body: {
+            CanSeek: false,
+            ItemId: props.state.item.Id,
+            IsPaused: !props.state.playing,
+            IsMuted: false,
+            PositionTicks: Math.floor(position * 10000),
+            VolumeLevel: volume
+          }
+        });
     } catch (err) {}
   }
 
@@ -334,16 +336,17 @@ export default function NowPlaying(props: { state: PlaybackState }) {
 
     setPosition(audioRef.current.currentTime * 1000);
 
-    reportPlaybackProgress({
-      body: {
-        CanSeek: false,
-        ItemId: props.state.item?.Id,
-        IsPaused: false,
-        IsMuted: false,
-        PositionTicks: Math.floor(position * 10000),
-        VolumeLevel: volume
-      }
-    }).catch(() => {});
+    if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
+      reportPlaybackProgress({
+        body: {
+          CanSeek: false,
+          ItemId: props.state.item?.Id,
+          IsPaused: false,
+          IsMuted: false,
+          PositionTicks: Math.floor(position * 10000),
+          VolumeLevel: volume
+        }
+      }).catch(() => {});
   }
 
   function pause() {
@@ -359,16 +362,17 @@ export default function NowPlaying(props: { state: PlaybackState }) {
 
     setPosition(audioRef.current.currentTime * 1000);
 
-    reportPlaybackProgress({
-      body: {
-        CanSeek: false,
-        ItemId: props.state.item?.Id,
-        IsPaused: true,
-        IsMuted: false,
-        PositionTicks: Math.floor(position * 10000),
-        VolumeLevel: volume
-      }
-    }).catch(() => {});
+    if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
+      reportPlaybackProgress({
+        body: {
+          CanSeek: false,
+          ItemId: props.state.item?.Id,
+          IsPaused: true,
+          IsMuted: false,
+          PositionTicks: Math.floor(position * 10000),
+          VolumeLevel: volume
+        }
+      }).catch(() => {});
   }
 
   function next() {
@@ -441,9 +445,10 @@ export default function NowPlaying(props: { state: PlaybackState }) {
     setQueue(null);
 
     try {
-      reportPlaybackStopped({
-        body: {}
-      });
+      if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
+        reportPlaybackStopped({
+          body: {}
+        });
     } catch (err) {}
   }
 
