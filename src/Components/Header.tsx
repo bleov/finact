@@ -7,12 +7,12 @@ import { useMediaQuery } from "rsuite/esm/useMediaQuery/useMediaQuery";
 import { useState } from "react";
 import { isElectron } from "../Util/Helpers";
 import localforage from "localforage";
-import { reportSessionEnded } from "../Client";
+import { reportSessionEnded, UserDto } from "../Client";
 
 const storage = getStorage();
 const cacheStorage = getCacheStorage();
 
-export default function MainHeader(props) {
+export default function MainHeader(props: { user: UserDto }) {
   const [collapsedHeader] = useMediaQuery("(max-width: 571px)");
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [logoEasterEgg, setLogoEasterEgg] = useState(false);
@@ -72,13 +72,18 @@ export default function MainHeader(props) {
           <>
             <Navbar.Brand>
               <HStack>
-                <Image src="finact.png" style={{ height: "1.5em" }} className={logoEasterEgg ? "spin" : ""} onClick={(e) => {
-                  if (logoEasterEgg) return;
-                  setLogoEasterEgg(true);
-                  setTimeout(() => {
-                    setLogoEasterEgg(false);
-                  }, 600);
-                }} />
+                <Image
+                  src="finact.png"
+                  style={{ height: "1.5em" }}
+                  className={logoEasterEgg ? "spin" : ""}
+                  onClick={(e) => {
+                    if (logoEasterEgg) return;
+                    setLogoEasterEgg(true);
+                    setTimeout(() => {
+                      setLogoEasterEgg(false);
+                    }, 600);
+                  }}
+                />
                 <span>Finact</span>
               </HStack>
             </Navbar.Brand>

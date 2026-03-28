@@ -11,7 +11,13 @@ import type { BaseItemDto } from "../Client";
 
 const storage = getStorage();
 
-function getMenuContents(menuCategories) {
+interface Category {
+  icon: string;
+  label: string;
+  action: () => void;
+}
+
+function getMenuContents(menuCategories: Category[][]) {
   return menuCategories.map((category, index) => (
     <div key={index}>
       {index > 0 && <MenuDivider />}
@@ -60,12 +66,6 @@ export default function ItemContextMenu({
   const user = getUser();
 
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
-
-  interface Category {
-    icon: string;
-    label: string;
-    action: () => void;
-  }
 
   const menuCategories: Category[][] = [];
   let playbackCategory: Category[] = [];

@@ -37,7 +37,9 @@ export default function NowPlaying(props: { state: PlaybackState }) {
     visualizerSupported.current = true;
   }
 
-  function getArtistDisplay(artists) {
+  function getArtistDisplay(artists: string[] | null | undefined) {
+    if (!artists || artists.length === 0) return "Unknown Artist";
+
     const artistNames = artists.join(" / ");
     return artistNames.length > 29 ? `${artistNames.slice(0, 29)}...` : artistNames;
   }
@@ -178,7 +180,7 @@ export default function NowPlaying(props: { state: PlaybackState }) {
     }, [queue]);
   }
 
-  function handleTimeUpdate(e) {
+  function handleTimeUpdate(e: number) {
     const newTime = e / 1000;
     setPlaybackState((prevState) => ({
       ...prevState,
@@ -264,7 +266,7 @@ export default function NowPlaying(props: { state: PlaybackState }) {
             playItem(setPlaybackState, setQueue, itemData);
           }
           if (itemData.Type == "MusicAlbum" || itemData.Type == "Playlist") {
-            const query = {
+            const query: Record<string, any> = {
               parentId: itemData.Id
             };
 

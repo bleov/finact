@@ -4,6 +4,7 @@ import { Blurhash } from "react-blurhash";
 import { getAlbumArt } from "../Util/Formatting";
 import ItemContextMenu from "./ItemContextMenu";
 import React, { useState } from "react";
+import { BaseItemDto } from "../Client";
 
 const storage = getStorage();
 
@@ -36,7 +37,7 @@ const contentStyle: React.CSSProperties = {
   fontWeight: "bold"
 };
 
-export default function ItemTile(props) {
+export default function ItemTile(props: { item: BaseItemDto; tileProps?: React.HTMLAttributes<HTMLElement> }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [anchorPoint, setAnchorPoint] = useState<{
     x: number;
@@ -66,15 +67,13 @@ export default function ItemTile(props) {
       >
         <div style={squareStyle}>
           <div style={contentStyle}>
-            {typeof props.item.ImageBlurHashes == "object" &&
-              "ImageBlurHashes" in props.item &&
-              "Primary" in props.item.ImageBlurHashes && (
-                <Blurhash
-                  hash={props.item.ImageBlurHashes.Primary[Object.keys(props.item.ImageBlurHashes.Primary)[0]]}
-                  width={"100%"}
-                  height={"100%"}
-                />
-              )}
+            {typeof props.item.ImageBlurHashes == "object" && props.item.ImageBlurHashes && props.item.ImageBlurHashes.Primary && (
+              <Blurhash
+                hash={props.item.ImageBlurHashes.Primary[Object.keys(props.item.ImageBlurHashes.Primary)[0]]}
+                width={"100%"}
+                height={"100%"}
+              />
+            )}
             <Image
               style={{ visibility: "hidden", position: "absolute", backgroundColor: "var(--rs-body)" }}
               onLoad={(e) => {
