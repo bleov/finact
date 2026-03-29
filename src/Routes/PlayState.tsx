@@ -15,7 +15,7 @@ const cacheStorage = getCacheStorage();
 const storage = getStorage();
 
 function Queue() {
-  const { queue, setQueue } = useContext(GlobalState);
+  const { queue, setQueue, playbackState } = useContext(GlobalState);
   const [sortable, setSortable] = useState(false);
 
   const handleSortEnd = ({
@@ -44,7 +44,19 @@ function Queue() {
           <List bordered sortable={sortable} hover onSort={handleSortEnd}>
             {queue.items.map((item, index) => {
               return (
-                <ItemListEntry item={item} type="queue" index={index} key={item.Id} allItems={queue.items} setSortable={setSortable} />
+                <ItemListEntry
+                  props={{
+                    style: {
+                      backgroundColor: playbackState?.item.Id == item.Id ? "rgba(255, 255, 255, 0.1)" : undefined
+                    }
+                  }}
+                  item={item}
+                  type="queue"
+                  index={index}
+                  key={item.Id}
+                  allItems={queue.items}
+                  setSortable={setSortable}
+                />
               );
             })}
           </List>
@@ -99,62 +111,7 @@ export default function PlayState() {
                 }
               />
               <Text size={16}>{playbackState.item.Name}</Text>
-              <Scrubber
-                min={0}
-                max={playbackState.item?.RunTimeTicks! / 10000}
-                value={position!}
-                tooltip={{
-                  enabledOnHover: true,
-                  enabledOnScrub: true,
-                  formatString: (e) => {
-                    const minutes = Math.floor(e / 1000 / 60);
-                    const seconds = Math.floor((e / 1000) % 60);
-                    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-                    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
-                    return `${formattedMinutes}:${formattedSeconds}`;
-                  }
-                }}
-                onScrubEnd={(e) => {
-                  // handleTimeUpdate(e);
-                  isScrubbing.current = false;
-                }}
-                onScrubStart={(e) => {
-                  // handleTimeUpdate(e);
-                  setPosition(e);
-                  setPlaybackState((prev) => ({ ...prev!, position: e / 1000 }));
-                  isScrubbing.current = true;
-                }}
-                onScrubChange={(e) => {
-                  setPosition(e);
-                  setPlaybackState((prev) => ({ ...prev!, position: e / 1000 }));
-                }}
-              />
-              <ButtonGroup>
-                <Button
-                  appearance="subtle"
-                  onClick={() => {
-                    setPlaybackState((prev) => ({ ...prev!, position: (prev!.position ?? 0) - 10000 }));
-                  }}
-                >
-                  <Icon icon="skip_previous" noSpace />
-                </Button>
-                <Button
-                  appearance="subtle"
-                  onClick={() => {
-                    setPlaybackState((prev) => ({ ...prev!, playing: !prev!.playing }));
-                  }}
-                >
-                  <Icon icon={playbackState.playing ? "pause" : "play_arrow"} noSpace />
-                </Button>
-                <Button
-                  appearance="subtle"
-                  onClick={() => {
-                    setPlaybackState((prev) => ({ ...prev!, position: (prev!.position ?? 0) + 10000 }));
-                  }}
-                >
-                  <Icon icon="skip_next" noSpace />
-                </Button>
-              </ButtonGroup>
+              <Text muted>{playbackState.item.Artists?.join(", ")}</Text>
             </VStack>
           </>
         )}

@@ -14,7 +14,8 @@ export function ItemListEntry({
   allItems,
   setSortable,
   parentId,
-  refresh
+  refresh,
+  props
 }: {
   item: BaseItemDto;
   index: number;
@@ -23,6 +24,7 @@ export function ItemListEntry({
   setSortable?: React.Dispatch<React.SetStateAction<boolean>>;
   parentId?: string;
   refresh?: () => void;
+  props?: React.HTMLAttributes<HTMLElement>;
 }) {
   const { setQueue, setPlaybackState } = useContext(GlobalState);
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
@@ -35,6 +37,7 @@ export function ItemListEntry({
       onClick={async () => {
         playItem(setPlaybackState, setQueue, item, allItems);
       }}
+      {...props}
     >
       <HStack spacing={15} alignItems="center">
         {type == "queue" && (
