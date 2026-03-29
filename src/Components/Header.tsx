@@ -13,7 +13,6 @@ const storage = getStorage();
 const cacheStorage = getCacheStorage();
 
 export default function MainHeader(props: { user: UserDto }) {
-  const [collapsedHeader] = useMediaQuery("(max-width: 571px)");
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [logoEasterEgg, setLogoEasterEgg] = useState(false);
 
@@ -32,24 +31,22 @@ export default function MainHeader(props: { user: UserDto }) {
             closeSideNav();
             location.hash = "#";
           }}
+          icon={<Icon icon="home" />}
         >
-          <Icon icon="home" />
-          <span>Home</span>
+          Home
         </Nav.Item>
-        <Nav.Item href="#playlists" onClick={closeSideNav}>
-          <Icon icon="video_library" />
-          <span>Playlists</span>
+        <Nav.Item href="#playlists" onClick={closeSideNav} icon={<Icon icon="video_library" />}>
+          Playlists
         </Nav.Item>
-        <Nav.Item href="#collections" onClick={closeSideNav}>
-          <Icon icon="photo_library" />
-          <span>Collections</span>
+        <Nav.Item href="#collections" onClick={closeSideNav} icon={<Icon icon="photo_library" />}>
+          Collections
         </Nav.Item>
       </>
     );
   }
   return (
     <Header>
-      <Drawer open={sideNavOpen && collapsedHeader} onClose={() => setSideNavOpen(false)} placement="left" size={"65vw"}>
+      <Drawer open={sideNavOpen} onClose={() => setSideNavOpen(false)} placement="left" size={"65vw"}>
         <Drawer.Header>
           <Drawer.Title>
             <Image src="finact.png" style={{ height: "1em", marginRight: "5px" }} />
@@ -68,84 +65,86 @@ export default function MainHeader(props: { user: UserDto }) {
         </Drawer.Body>
       </Drawer>
       <Navbar>
-        {!collapsedHeader ? (
-          <>
-            <Navbar.Brand>
-              <HStack>
-                <Image
-                  src="finact.png"
-                  style={{ height: "1.5em" }}
-                  className={logoEasterEgg ? "spin" : ""}
-                  onClick={(e) => {
-                    if (logoEasterEgg) return;
-                    setLogoEasterEgg(true);
-                    setTimeout(() => {
-                      setLogoEasterEgg(false);
-                    }, 600);
-                  }}
-                />
-                <span>Finact</span>
-              </HStack>
-            </Navbar.Brand>
-            <Nav>{props.user ? <LibraryNavigation /> : ""}</Nav>
-          </>
-        ) : (
+        <Navbar.Content showFrom="xs">
+          <Navbar.Brand>
+            <HStack>
+              <Image
+                src="finact.png"
+                style={{ height: "1.5em" }}
+                className={logoEasterEgg ? "spin" : ""}
+                onClick={(e) => {
+                  if (logoEasterEgg) return;
+                  setLogoEasterEgg(true);
+                  setTimeout(() => {
+                    setLogoEasterEgg(false);
+                  }, 600);
+                }}
+              />
+              <span>Finact</span>
+            </HStack>
+          </Navbar.Brand>
+          <Nav>{props.user ? <LibraryNavigation /> : ""}</Nav>
+        </Navbar.Content>
+        <Navbar.Content hideFrom="xs">
           <Nav>
             <Nav.Item onClick={() => setSideNavOpen(!sideNavOpen)}>
               <Icon icon="menu" noSpace />
             </Nav.Item>
           </Nav>
-        )}
-        <Nav pullRight>
-          {props.user ? (
-            <>
-              <Nav.Item as="a" href="#search">
-                <Icon icon="search" noSpace />
-              </Nav.Item>
-              <Menu
-                align="end"
-                menuButton={
-                  <Nav.Item title="Profile">
-                    <Avatar circle size="sm" src={`${storage.get("serverURL")}/Users/${props.user.Id}/Images/Primary`} />
-                  </Nav.Item>
-                }
-                transition
-                theming="dark"
-              >
-                <MenuItem href={`${storage.get("serverURL")}/web/#/mypreferencesmenu.html`} target="_blank">
-                  <Icon icon="account_circle" />
-                  User Settings
-                </MenuItem>
-                {getUser()?.Policy?.IsAdministrator && (
-                  <MenuItem href={`${storage.get("serverURL")}/web/#/dashboard`} target="_blank">
-                    <Icon icon="dashboard" />
-                    Dashboard
-                  </MenuItem>
-                )}
-                <MenuItem
-                  onClick={async () => {
-                    await reportSessionEnded();
-                    storage.clearAll();
-                    cacheStorage.clearAll();
-                    localforage.clear();
-                    window.location.reload();
-                  }}
+        </Navbar.Content>
+
+        <Navbar.Content alignSelf={"end"}>
+          <Nav>
+            {props.user ? (
+              <>
+                <Nav.Item as="a" href="#search">
+                  <Icon icon="search" noSpace />
+                </Nav.Item>
+                <Menu
+                  align="end"
+                  menuButton={
+                    <Nav.Item title="Profile">
+                      <Avatar circle size="sm" src={`${storage.get("serverURL")}/Users/${props.user.Id}/Images/Primary`} />
+                    </Nav.Item>
+                  }
+                  transition
+                  theming="dark"
                 >
-                  <Icon icon="logout" />
-                  Sign out
-                </MenuItem>
-                {isElectron && (
-                  <MenuItem onClick={() => window.electron!.sendMessage(JSON.stringify({ type: "quit" }))}>
-                    <Icon icon="close" />
-                    Quit
+                  <MenuItem href={`${storage.get("serverURL")}/web/#/mypreferencesmenu.html`} target="_blank">
+                    <Icon icon="account_circle" />
+                    User Settings
                   </MenuItem>
-                )}
-              </Menu>
-            </>
-          ) : (
-            ""
-          )}
-        </Nav>
+                  {getUser()?.Policy?.IsAdministrator && (
+                    <MenuItem href={`${storage.get("serverURL")}/web/#/dashboard`} target="_blank">
+                      <Icon icon="dashboard" />
+                      Dashboard
+                    </MenuItem>
+                  )}
+                  <MenuItem
+                    onClick={async () => {
+                      await reportSessionEnded();
+                      storage.clearAll();
+                      cacheStorage.clearAll();
+                      localforage.clear();
+                      window.location.reload();
+                    }}
+                  >
+                    <Icon icon="logout" />
+                    Sign out
+                  </MenuItem>
+                  {isElectron && (
+                    <MenuItem onClick={() => window.electron!.sendMessage(JSON.stringify({ type: "quit" }))}>
+                      <Icon icon="close" />
+                      Quit
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
+            ) : (
+              ""
+            )}
+          </Nav>
+        </Navbar.Content>
       </Navbar>
     </Header>
   );

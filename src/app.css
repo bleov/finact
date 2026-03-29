@@ -101,25 +101,6 @@ i.material-icons.no-space {
   margin-block: auto;
 }
 
-.rs-sidenav-item {
-  padding-left: 20px !important;
-}
-
-.rs-sidenav-item span {
-  margin-left: 5px;
-  position: absolute;
-  top: 50%;
-  transform: translateY(calc(-50% - 2.5px));
-}
-
-div.rs-drawer-header img {
-  transform: translateY(-10%);
-}
-
-.rs-sidenav-item .rs-ripple-pond {
-  visibility: hidden;
-}
-
 .scrubber,
 .scrubber .bar,
 .bar__progress,

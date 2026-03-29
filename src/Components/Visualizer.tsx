@@ -7,6 +7,23 @@ const canvasStyle: React.CSSProperties = {
   left: 0
 };
 
+export function isButterchurnSupported() {
+  let gl = null;
+
+  try {
+    const canvas = document.createElement("canvas");
+    gl = canvas.getContext("webgl2");
+  } catch {
+    gl = null;
+  }
+
+  const hasWebGL2 = !!gl;
+
+  const hasAudioContext = typeof window.AudioContext !== "undefined" || typeof window.webkitAudioContext !== "undefined";
+
+  return hasWebGL2 && hasAudioContext;
+}
+
 export default function Visualizer(props) {
   const { setLoading } = useContext(GlobalState);
 

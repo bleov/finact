@@ -1,15 +1,14 @@
-import { Avatar, Button, ButtonGroup, FlexboxGrid, HStack, VStack, Navbar, Text, Footer, Whisper, Popover, Slider } from "rsuite";
+import { Avatar, Button, ButtonGroup, FlexboxGrid, HStack, VStack, Navbar, Text, Footer, Whisper, Popover, Slider, Row, Col } from "rsuite";
 import { getStorage } from "../storage";
 import { useContext, useEffect, useRef, useState } from "react";
 import { getUser, GlobalState, PlaybackState } from "../App";
 import { formatTimestamp, getAlbumArt, getPWADisplayMode } from "../Util/Formatting";
 import Icon from "./Icon";
 import ItemContextMenu from "./ItemContextMenu";
-import Visualizer from "./Visualizer";
+import Visualizer, { isButterchurnSupported } from "./Visualizer";
 import { Scrubber } from "react-scrubber";
 import "react-scrubber/lib/scrubber.css";
 const storage = getStorage();
-import isButterchurnSupported from "butterchurn/lib/isSupported.min";
 import Lyrics from "./Lyrics";
 import { isElectron, playItem } from "../Util/Helpers";
 import localforage from "localforage";
@@ -477,175 +476,179 @@ export default function StatusBar(props: { state: PlaybackState }) {
       {visualizerOpen ? <Visualizer audioContextRef={audioContextRef} gainNodeRef={gainNodeRef} /> : <></>}
       {lyricsOpen && <Lyrics state={props.state} position={position} />}
       <Footer className={lyricsOpen || visualizerOpen ? "footer-overlay" : ""}>
-        <Navbar className="now-playing" style={{ flexBasis: 0 }}>
-          <Scrubber
-            min={0}
-            max={props.state.item?.RunTimeTicks! / 10000}
-            value={position}
-            tooltip={{
-              enabledOnHover: true,
-              enabledOnScrub: true,
-              formatString: (e) => {
-                const minutes = Math.floor(e / 1000 / 60);
-                const seconds = Math.floor((e / 1000) % 60);
-                const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-                const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
-                return `${formattedMinutes}:${formattedSeconds}`;
-              }
-            }}
-            onScrubEnd={(e) => {
-              handleTimeUpdate(e);
-              isScrubbing.current = false;
-            }}
-            onScrubStart={(e) => {
-              // handleTimeUpdate(e);
-              setPosition(e);
-              isScrubbing.current = true;
-            }}
-            onScrubChange={setPosition}
-          />
-          <FlexboxGrid justify="space-around" align="middle">
-            <FlexboxGrid.Item
-              style={{ flex: 1 }}
-              className="pointer"
-              onClick={() => {
-                if (lyricsOpen) setLyricsOpen(false);
-                if (visualizerOpen) setVisualizerOpen(false);
-                window.location.hash = "#queue";
-              }}
-            >
-              <HStack spacing={10}>
-                <Avatar size="sm" src={getAlbumArt(props.state.item!)}>
-                  <Icon icon="album" noSpace />
-                </Avatar>
-                <div>
-                  <VStack spacing={0}>
-                    <Text weight="bold" className="no-select">
-                      {props.state.item?.Name}
-                    </Text>
-                    <Text muted className="no-select">
-                      {getArtistDisplay(props.state.item?.Artists)}
-                    </Text>
-                  </VStack>
-                </div>
-              </HStack>
-            </FlexboxGrid.Item>
-            <FlexboxGrid.Item style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <ButtonGroup>
-                <Button appearance="subtle" onClick={previous}>
-                  <Icon icon={"skip_previous"} noSpace />
-                </Button>
-                <Button
-                  appearance="subtle"
-                  onClick={() => {
-                    if (playbackState!.playing) {
-                      pause();
-                    } else {
-                      play();
-                    }
-                  }}
-                >
-                  <Icon icon={props.state.playing ? "pause" : "play_arrow"} noSpace />
-                </Button>
-                <Button
-                  appearance="subtle"
-                  className="stop-btn"
-                  onClick={() => {
-                    stop();
-                  }}
-                >
-                  <Icon icon={"stop"} noSpace />
-                </Button>
-                <Button appearance="subtle" onClick={next}>
-                  <Icon icon={"skip_next"} noSpace />
-                </Button>
-              </ButtonGroup>
-            </FlexboxGrid.Item>
-            <FlexboxGrid.Item style={{ flex: 1, display: "flex", justifyContent: "flex-end" }} className="now-playing-buttons">
-              <HStack spacing={9}>
-                <Text muted className="no-select track-time">
-                  {formatTimestamp(position / 1000)} / {formatTimestamp(props.state.item?.RunTimeTicks! / 1e7)}
-                </Text>
-                {visualizerSupported.current && (
+        <Navbar className="now-playing">
+          <Col flex={1}>
+            <Row>
+              <Scrubber
+                min={0}
+                max={props.state.item?.RunTimeTicks! / 10000}
+                value={position}
+                tooltip={{
+                  enabledOnHover: true,
+                  enabledOnScrub: true,
+                  formatString: (e) => {
+                    const minutes = Math.floor(e / 1000 / 60);
+                    const seconds = Math.floor((e / 1000) % 60);
+                    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+                    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+                    return `${formattedMinutes}:${formattedSeconds}`;
+                  }
+                }}
+                onScrubEnd={(e) => {
+                  handleTimeUpdate(e);
+                  isScrubbing.current = false;
+                }}
+                onScrubStart={(e) => {
+                  // handleTimeUpdate(e);
+                  setPosition(e);
+                  isScrubbing.current = true;
+                }}
+                onScrubChange={setPosition}
+              />
+            </Row>
+            <Row justify="space-around" align="middle">
+              <Col
+                style={{ flex: 1 }}
+                className="pointer"
+                onClick={() => {
+                  if (lyricsOpen) setLyricsOpen(false);
+                  if (visualizerOpen) setVisualizerOpen(false);
+                  window.location.hash = "#queue";
+                }}
+              >
+                <HStack spacing={10}>
+                  <Avatar size="sm" src={getAlbumArt(props.state.item!)}>
+                    <Icon icon="album" noSpace />
+                  </Avatar>
+                  <div>
+                    <VStack spacing={0}>
+                      <Text weight="bold" className="no-select">
+                        {props.state.item?.Name}
+                      </Text>
+                      <Text muted className="no-select">
+                        {getArtistDisplay(props.state.item?.Artists)}
+                      </Text>
+                    </VStack>
+                  </div>
+                </HStack>
+              </Col>
+              <Col style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+                <ButtonGroup>
+                  <Button appearance="subtle" onClick={previous}>
+                    <Icon icon={"skip_previous"} noSpace />
+                  </Button>
                   <Button
-                    className="square visualizer-btn"
                     appearance="subtle"
-                    title="Toggle Visualizer"
                     onClick={() => {
-                      if (lyricsOpen) {
-                        setLyricsOpen(false);
+                      if (playbackState!.playing) {
+                        pause();
+                      } else {
+                        play();
                       }
-                      setVisualizerOpen(!visualizerOpen);
                     }}
                   >
-                    <Icon icon={"music_video"} noSpace />
+                    <Icon icon={props.state.playing ? "pause" : "play_arrow"} noSpace />
                   </Button>
-                )}
-                {(props.state.item?.HasLyrics || lyricsOpen) && (
+                  <Button
+                    appearance="subtle"
+                    className="stop-btn"
+                    onClick={() => {
+                      stop();
+                    }}
+                  >
+                    <Icon icon={"stop"} noSpace />
+                  </Button>
+                  <Button appearance="subtle" onClick={next}>
+                    <Icon icon={"skip_next"} noSpace />
+                  </Button>
+                </ButtonGroup>
+              </Col>
+              <Col style={{ flex: 1, display: "flex", justifyContent: "flex-end" }} className="now-playing-buttons">
+                <HStack spacing={9}>
+                  <Text muted className="no-select track-time">
+                    {formatTimestamp(position / 1000)} / {formatTimestamp(props.state.item?.RunTimeTicks! / 1e7)}
+                  </Text>
+                  {visualizerSupported.current && (
+                    <Button
+                      className="square visualizer-btn"
+                      appearance="subtle"
+                      title="Toggle Visualizer"
+                      onClick={() => {
+                        if (lyricsOpen) {
+                          setLyricsOpen(false);
+                        }
+                        setVisualizerOpen(!visualizerOpen);
+                      }}
+                    >
+                      <Icon icon={"music_video"} noSpace />
+                    </Button>
+                  )}
+                  {(props.state.item?.HasLyrics || lyricsOpen) && (
+                    <Button
+                      className="square"
+                      appearance="subtle"
+                      title="Lyrics"
+                      onClick={async () => {
+                        if (!lyricsOpen) {
+                          setLyricsOpen(true);
+                          if (visualizerOpen) {
+                            setVisualizerOpen(false);
+                          }
+                        } else {
+                          setLyricsOpen(false);
+                        }
+                      }}
+                    >
+                      <Icon icon={"lyrics"} noSpace />
+                    </Button>
+                  )}
+                  <Whisper
+                    placement="top"
+                    trigger="click"
+                    preventOverflow={true}
+                    speaker={
+                      <Popover style={{ width: 200 }}>
+                        <Slider progress renderTooltip={() => volume + "%"} defaultValue={100} value={volume} onChange={setVolume} />
+                      </Popover>
+                    }
+                  >
+                    <Button className="square" appearance="subtle" title="Volume">
+                      <Icon icon={volume > 66 ? "volume_up" : volume > 33 ? "volume_down" : "volume_mute"} noSpace />
+                    </Button>
+                  </Whisper>
                   <Button
                     className="square"
                     appearance="subtle"
-                    title="Lyrics"
-                    onClick={async () => {
-                      if (!lyricsOpen) {
-                        setLyricsOpen(true);
-                        if (visualizerOpen) {
-                          setVisualizerOpen(false);
-                        }
+                    title="Repeat"
+                    onClick={() => {
+                      if (repeat == "none") {
+                        setRepeat("all");
+                      } else if (repeat == "all") {
+                        setRepeat("one");
                       } else {
-                        setLyricsOpen(false);
+                        setRepeat("none");
                       }
                     }}
                   >
-                    <Icon icon={"lyrics"} noSpace />
+                    <Icon
+                      icon={repeat == "one" ? "repeat_one" : "repeat"}
+                      style={{ color: repeat !== "none" ? "var(--rs-primary-600)" : "unset" }}
+                      noSpace
+                    />
                   </Button>
-                )}
-                <Whisper
-                  placement="top"
-                  trigger="click"
-                  preventOverflow={true}
-                  speaker={
-                    <Popover style={{ width: 200 }}>
-                      <Slider progress renderTooltip={() => volume + "%"} defaultValue={100} value={volume} onChange={setVolume} />
-                    </Popover>
-                  }
-                >
-                  <Button className="square" appearance="subtle" title="Volume">
-                    <Icon icon={volume > 66 ? "volume_up" : volume > 33 ? "volume_down" : "volume_mute"} noSpace />
-                  </Button>
-                </Whisper>
-                <Button
-                  className="square"
-                  appearance="subtle"
-                  title="Repeat"
-                  onClick={() => {
-                    if (repeat == "none") {
-                      setRepeat("all");
-                    } else if (repeat == "all") {
-                      setRepeat("one");
-                    } else {
-                      setRepeat("none");
+                  <ItemContextMenu
+                    item={props.state.item!}
+                    type="now-playing"
+                    menuButton={
+                      <Button appearance="subtle" className="square">
+                        <Icon icon="more_vert" noSpace />
+                      </Button>
                     }
-                  }}
-                >
-                  <Icon
-                    icon={repeat == "one" ? "repeat_one" : "repeat"}
-                    style={{ color: repeat !== "none" ? "var(--rs-primary-600)" : "unset" }}
-                    noSpace
                   />
-                </Button>
-                <ItemContextMenu
-                  item={props.state.item!}
-                  type="now-playing"
-                  menuButton={
-                    <Button appearance="subtle" className="square">
-                      <Icon icon="more_vert" noSpace />
-                    </Button>
-                  }
-                />
-              </HStack>
-            </FlexboxGrid.Item>
-          </FlexboxGrid>
+                </HStack>
+              </Col>
+            </Row>
+          </Col>
         </Navbar>
       </Footer>
     </>

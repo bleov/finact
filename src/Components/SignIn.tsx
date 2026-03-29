@@ -68,8 +68,8 @@ export function SignIn(props) {
             }
           }}
         >
-          <Form.Group content="serverURL">
-            <Form.ControlLabel>Server URL</Form.ControlLabel>
+          <Form.Group flexDirection={"column"} content="serverURL">
+            <Form.Label>Server URL</Form.Label>
             <InputGroup style={styles}>
               <Form.Control name="serverURL" placeholder="https://jellyfin.example.com" defaultValue={""} />
               <InputGroup.Button loading={loading} type="submit">
@@ -119,12 +119,12 @@ export function SignIn(props) {
             }
           }}
         >
-          <Form.Group content="username">
-            <Form.ControlLabel>Username</Form.ControlLabel>
+          <Form.Group flexDirection={"column"} paddingBottom={10} content="username">
+            <Form.Label>Username</Form.Label>
             <Form.Control autoFocus name="username" placeholder="Username" defaultValue={""} />
           </Form.Group>
-          <Form.Group content="password">
-            <Form.ControlLabel>Password</Form.ControlLabel>
+          <Form.Group flexDirection={"column"} content="password">
+            <Form.Label>Password</Form.Label>
             <InputGroup>
               <Form.Control name="password" type="password" placeholder="Password" defaultValue={""} />
               <InputGroup.Button loading={loading} type="submit">
