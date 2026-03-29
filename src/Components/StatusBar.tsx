@@ -19,7 +19,7 @@ interface ExtendedAudioElement extends HTMLAudioElement {
   sourceNode?: MediaElementAudioSourceNode;
 }
 
-export default function NowPlaying(props: { state: PlaybackState }) {
+export default function StatusBar(props: { state: PlaybackState }) {
   const audioRef = useRef<ExtendedAudioElement | null>(null);
   const { playbackState, setPlaybackState, queue, setQueue, lastCommand } = useContext(GlobalState);
   const [visualizerOpen, setVisualizerOpen] = useState(false);

@@ -7,7 +7,7 @@ import { HashRouter, Route, Routes } from "react-router";
 import Home from "./Routes/Home";
 import Playlists from "./Routes/Playlists";
 import Collections from "./Routes/Collections";
-import NowPlaying from "./Components/NowPlaying";
+import StatusBar from "./Components/StatusBar";
 import Collection from "./Routes/Collections/[id]";
 import NotFound from "./Routes/NotFound";
 import Playlist from "./Routes/Playlists/[id]";
@@ -214,7 +214,7 @@ function App() {
               </>
             )}
           </Content>
-          {user && playbackState && <NowPlaying state={playbackState} />}
+          {user && playbackState && <StatusBar state={playbackState} />}
           {loading && <Loader backdrop vertical size="lg" />}
         </Container>
       </GlobalState.Provider>
