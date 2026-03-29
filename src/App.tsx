@@ -210,39 +210,14 @@ function App() {
                     <Route path="/albums/:id" element={<Album />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                  {user && playbackState && <Status state={playbackState} />}
                 </HashRouter>
               </>
             )}
           </Content>
+          {user && playbackState && <PlayBar state={playbackState} />}
           {loading && <Loader backdrop vertical size="lg" />}
         </Container>
       </GlobalState.Provider>
-    </>
-  );
-}
-
-function Status(props: { state: PlaybackState }) {
-  const queueOpen = useMatch("/queue");
-  return (
-    <>
-      <div
-        style={{
-          paddingBottom: queueOpen ? 0 : "60px"
-        }}
-      ></div>
-      <span
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100vw",
-          zIndex: 5,
-          display: queueOpen ? "none" : "block"
-        }}
-      >
-        {<PlayBar state={props.state} />}
-      </span>
     </>
   );
 }
