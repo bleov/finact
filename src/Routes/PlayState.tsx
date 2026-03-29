@@ -95,7 +95,7 @@ export default function PlayState() {
           <Fallback icon="play_circle_outline" text="Nothing is playing" />
         ) : (
           <>
-            <VStack justifyContent="space-between" align="center" spacing={20} width={"100%"} padding={20}>
+            <VStack justifyContent="space-between" textAlign="center" align="center" spacing={20} width={"100%"} padding={20}>
               <Image
                 borderRadius={"6px"}
                 maxWidth={"40vw"}
