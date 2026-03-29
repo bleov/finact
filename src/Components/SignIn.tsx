@@ -6,6 +6,7 @@ import Icon from "./Icon";
 import { GlobalState } from "../App";
 import { errorNotification } from "../Util/Toaster";
 import { authenticateUserByName, getPublicSystemInfo } from "../Client";
+import { client } from "../Client/client.gen";
 
 const storage = getStorage();
 
@@ -38,6 +39,7 @@ export function SignIn(props) {
               }
               console.log("Using server URL: " + serverURL);
               storage.set("serverURL", serverURL);
+              client.setConfig({ baseUrl: serverURL });
               setLoading(true);
               try {
                 const infoRequest = await getPublicSystemInfo();
