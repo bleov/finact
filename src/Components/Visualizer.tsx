@@ -39,7 +39,7 @@ export default function Visualizer(props) {
     let closing = false;
     setLoading(true);
     async function setup() {
-      const butterchurn = (await import("butterchurn")).default;
+      const butterchurn = (await import("butterchurn")).default.default;
       const butterchurnPresets = (await import("butterchurn-presets")).default;
       presets.current = butterchurnPresets.getPresets();
 
