@@ -7,7 +7,7 @@ import { HashRouter, Route, Routes, useMatch } from "react-router";
 import Home from "./Routes/Home";
 import Playlists from "./Routes/Playlists";
 import Collections from "./Routes/Collections";
-import StatusBar from "./Components/StatusBar";
+import PlayBar from "./Components/PlayBar";
 import Collection from "./Routes/Collections/[id]";
 import NotFound from "./Routes/NotFound";
 import Playlist from "./Routes/Playlists/[id]";
@@ -241,7 +241,7 @@ function Status(props: { state: PlaybackState }) {
           display: queueOpen ? "none" : "block"
         }}
       >
-        {<StatusBar state={props.state} />}
+        {<PlayBar state={props.state} />}
       </span>
     </>
   );
