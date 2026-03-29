@@ -3,7 +3,7 @@ import { Container, Content, Loader, useToaster, Notification, Button, Text } fr
 import "rsuite/dist/rsuite.min.css";
 import { SignIn } from "./Components/SignIn";
 import MainHeader from "./Components/Header";
-import { HashRouter, Route, Routes } from "react-router";
+import { HashRouter, Route, Routes, useMatch } from "react-router";
 import Home from "./Routes/Home";
 import Playlists from "./Routes/Playlists";
 import Collections from "./Routes/Collections";
@@ -14,7 +14,7 @@ import Playlist from "./Routes/Playlists/[id]";
 import Album from "./Routes/Albums/[id]";
 import Search from "./Routes/Search";
 import AddItem from "./Components/AddItem";
-import Queue from "./Routes/Queue";
+import PlayState from "./Routes/PlayState";
 import { isElectron, playItem } from "./Util/Helpers";
 import { client } from "./Client/client.gen";
 import { BaseItemDto, UserDto } from "./Client";
@@ -201,7 +201,7 @@ function App() {
                 <HashRouter>
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/queue" element={<Queue />} />
+                    <Route path="/queue" element={<PlayState />} />
                     <Route path="/playlists" element={<Playlists />} />
                     <Route path="/playlists/:id" element={<Playlist />} />
                     <Route path="/collections" element={<Collections />} />
@@ -210,14 +210,39 @@ function App() {
                     <Route path="/albums/:id" element={<Album />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  {user && playbackState && <Status state={playbackState} />}
                 </HashRouter>
               </>
             )}
           </Content>
-          {user && playbackState && <StatusBar state={playbackState} />}
           {loading && <Loader backdrop vertical size="lg" />}
         </Container>
       </GlobalState.Provider>
+    </>
+  );
+}
+
+function Status(props: { state: PlaybackState }) {
+  const queueOpen = useMatch("/queue");
+  return (
+    <>
+      <div
+        style={{
+          paddingBottom: queueOpen ? 0 : "60px"
+        }}
+      ></div>
+      <span
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          width: "100vw",
+          zIndex: 5,
+          display: queueOpen ? "none" : "block"
+        }}
+      >
+        {<StatusBar state={props.state} />}
+      </span>
     </>
   );
 }
