@@ -8,12 +8,35 @@ import { playItem } from "../Util/Helpers";
 import type { BaseItemDto } from "../Client";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
+import type { AppDispatch } from "../store/store";
+
+function QueueRemoveButton({ index, dispatch }: { index: number; dispatch: AppDispatch }) {
+  const queue = useAppSelector((state) => state.queue);
+
+  return (
+    <Button
+      appearance="subtle"
+      className="square"
+      onClick={(e) => {
+        e.stopPropagation();
+        if (queue) {
+          const newItems = [...queue.items];
+          newItems.splice(index, 1);
+          dispatch(setQueue({ ...queue, items: newItems }));
+        }
+      }}
+    >
+      <Icon icon="remove_circle_outline" noSpace />
+    </Button>
+  );
+}
+
+const MemoQueueRemoveButton = memo(QueueRemoveButton);
 
 function ItemListEntryComponent({
   item,
   index,
   type,
-  allItems,
   setSortable,
   parentId,
   refresh,
@@ -22,15 +45,14 @@ function ItemListEntryComponent({
   item: BaseItemDto;
   index: number;
   type: "queue" | "album" | "playlist" | "standalone";
-  allItems?: BaseItemDto[];
   setSortable?: React.Dispatch<React.SetStateAction<boolean>>;
   parentId?: string;
   refresh?: () => void;
   props?: React.HTMLAttributes<HTMLElement>;
 }) {
   const dispatch = useAppDispatch();
-  const queue = useAppSelector((state) => state.queue);
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
+  const playlistContext = useAppSelector((state) => state.playlistContext);
 
   console.log("rendering item list entry");
 
@@ -44,24 +66,12 @@ function ItemListEntryComponent({
           (state) => dispatch(setPlaybackState(state)),
           (state) => dispatch(setQueue(state)),
           item,
-          allItems
+          playlistContext?.items
         );
       }}
       {...props}
     >
       <HStack spacing={15} alignItems="center">
-        {type == "queue" && (
-          <div
-            onMouseEnter={() => {
-              setSortable?.(true);
-            }}
-            onMouseLeave={() => {
-              setSortable?.(false);
-            }}
-          >
-            <Icon icon="drag_handle" style={{ color: "var(--rs-text-secondary)" }} noSpace />
-          </div>
-        )}
         {type == "album" && item.IndexNumber && <Text muted>{item.IndexNumber}</Text>}
         {type != "album" && (
           <Avatar src={getAlbumArt(item, 160)}>
@@ -87,22 +97,7 @@ function ItemListEntryComponent({
               {formatTimestamp(item.RunTimeTicks! / 10000000)}
             </Text>
           </VStack>
-          {type == "queue" && (
-            <Button
-              appearance="subtle"
-              className="square"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (queue) {
-                  const newItems = [...queue.items];
-                  newItems.splice(index, 1);
-                  dispatch(setQueue({ ...queue, items: newItems }));
-                }
-              }}
-            >
-              <Icon icon="remove_circle_outline" noSpace />
-            </Button>
-          )}
+          {type == "queue" && <MemoQueueRemoveButton index={index} dispatch={dispatch} />}
           <ItemContextMenu
             item={item}
             context={{ parentType: type, index, parentId, refresh }}

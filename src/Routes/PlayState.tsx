@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { Center, Image, List, Stack, Text, VStack } from "rsuite";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { getCacheStorage, getStorage } from "../storage";
@@ -8,15 +8,51 @@ import { getAlbumArt } from "../Util/Formatting";
 import localforage from "localforage";
 import { Blurhash, BlurhashCanvas } from "react-blurhash";
 import { setQueue } from "../store/slices/queueSlice";
+import { setPlaylistContext } from "../store/slices/playlistContextSlice";
+import type { BaseItemDto } from "../Client";
 
 const cacheStorage = getCacheStorage();
 const storage = getStorage();
 
+function QueueItemWrapper({
+  item,
+  index,
+  setSortable
+}: {
+  item: BaseItemDto;
+  index: number;
+  setSortable: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const playbackState = useAppSelector((state) => state.playback);
+
+  return (
+    <ItemListEntry
+      props={{
+        style: {
+          backgroundColor: playbackState?.item?.Id == item.Id ? "rgba(40, 40, 40, 0.4)" : undefined
+        }
+      }}
+      item={item}
+      type="queue"
+      index={index}
+      key={item.Id}
+      setSortable={setSortable}
+    />
+  );
+}
+
+const MemoQueueItemWrapper = memo(QueueItemWrapper);
+
 function Queue() {
   const dispatch = useAppDispatch();
   const queue = useAppSelector((state) => state.queue);
-  const playbackState = useAppSelector((state) => state.playback);
   const [sortable, setSortable] = useState(false);
+
+  useEffect(() => {
+    if (queue && "items" in queue && queue.items.length > 0) {
+      dispatch(setPlaylistContext({ items: queue.items, type: "queue" }));
+    }
+  }, [queue, dispatch]);
 
   const handleSortEnd = ({
     oldIndex,
@@ -44,21 +80,7 @@ function Queue() {
         <>
           <List bordered sortable={sortable} onSort={handleSortEnd}>
             {queue.items.map((item, index) => {
-              return (
-                <ItemListEntry
-                  props={{
-                    style: {
-                      backgroundColor: playbackState?.item?.Id == item.Id ? "rgba(40, 40, 40, 0.4)" : undefined
-                    }
-                  }}
-                  item={item}
-                  type="queue"
-                  index={index}
-                  key={item.Id}
-                  allItems={queue.items}
-                  setSortable={setSortable}
-                />
-              );
+              return <MemoQueueItemWrapper item={item} index={index} setSortable={setSortable} />;
             })}
           </List>
         </>

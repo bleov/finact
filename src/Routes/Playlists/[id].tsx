@@ -11,6 +11,7 @@ import { getItem, getItems } from "../../Client/index";
 import type { BaseItemDtoQueryResult, BaseItemDto } from "../../Client/index";
 import { useAppDispatch } from "../../store/hooks";
 import { setLoading } from "../../store/slices/loadingSlice";
+import { setPlaylistContext } from "../../store/slices/playlistContextSlice";
 
 const storage = getStorage();
 
@@ -38,6 +39,9 @@ export default function Playlist() {
       })
     ]);
     setData({ data: responses[0].data!, items: responses[1].data! });
+    if (responses[1].data?.Items) {
+      dispatch(setPlaylistContext({ items: responses[1].data.Items, type: "playlist" }));
+    }
     dispatch(setLoading(false));
   };
 
@@ -76,15 +80,7 @@ export default function Playlist() {
           <Spacer height={15} />
           <List bordered hover>
             {data.items.Items!.map((item, index) => (
-              <ItemListEntry
-                item={item}
-                index={index}
-                allItems={data.items.Items}
-                type="playlist"
-                parentId={id}
-                key={item.Id}
-                refresh={fetchPlaylistData}
-              />
+              <ItemListEntry item={item} index={index} type="playlist" parentId={id} key={item.Id} refresh={fetchPlaylistData} />
             ))}
           </List>
         </>
