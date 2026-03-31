@@ -146,7 +146,7 @@ i.material-icons.no-space {
 }
 
 .footer-overlay nav {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
 *,
@@ -178,10 +178,6 @@ i.material-icons.no-space {
   border-bottom-right-radius: 6px !important;
 }
 
-.queue {
-  height: 100%;
-}
-
 .rs-navbar-brand {
   cursor: default;
   color: unset !important;
@@ -205,6 +201,15 @@ i.material-icons.no-space {
   height: 100vh;
   z-index: -2;
   filter: brightness(15%) saturate(200%);
+}
+
+.queue {
+  border-radius: var(--rs-radius-md);
+  outline: 1px var(--rs-border-secondary) solid;
+  border: none;
+  .rs-list-item {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
 }
 
 @media (max-width: 626px) {

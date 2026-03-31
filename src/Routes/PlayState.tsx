@@ -33,18 +33,18 @@ function Queue() {
     });
 
   return (
-    <Stack.Item flex={1} className="queue" overflow={"scroll"}>
+    <Stack.Item flex={1} className="queue" height={"100%"} overflow={"auto"}>
       {!queue || !("items" in queue) || queue.items.length == 0 ? (
         <Fallback icon="queue_music" text="Queue is empty" />
       ) : (
         <>
-          <List bordered sortable={sortable} hover onSort={handleSortEnd}>
+          <List bordered sortable={sortable} onSort={handleSortEnd}>
             {queue.items.map((item, index) => {
               return (
                 <ItemListEntry
                   props={{
                     style: {
-                      backgroundColor: playbackState?.item.Id == item.Id ? "rgba(255, 255, 255, 0.1)" : undefined
+                      backgroundColor: playbackState?.item?.Id == item.Id ? "rgba(40, 40, 40, 0.4)" : undefined
                     }
                   }}
                   item={item}
@@ -64,8 +64,7 @@ function Queue() {
 }
 
 export default function PlayState() {
-  const { playbackState, setPlaybackState } = useContext(GlobalState);
-  const isScrubbing = useRef(false);
+  const { playbackState } = useContext(GlobalState);
   const [position, setPosition] = useState(0);
 
   useEffect(() => {

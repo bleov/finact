@@ -475,7 +475,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
       />
       {visualizerOpen ? <Visualizer audioContextRef={audioContextRef} gainNodeRef={gainNodeRef} /> : <></>}
       {lyricsOpen && <Lyrics state={props.state} position={position} />}
-      <Footer className={lyricsOpen || visualizerOpen ? "footer-overlay" : ""}>
+      <Footer className={lyricsOpen || visualizerOpen || location.hash.includes("queue") ? "footer-overlay" : ""}>
         <Navbar className="now-playing">
           <Col flex={1}>
             <Row>
