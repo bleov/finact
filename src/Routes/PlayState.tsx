@@ -97,7 +97,7 @@ function Queue() {
                   type="queue"
                   index={index}
                   key={`${itemId}-${index}`}
-                  allItems={queueItems.filter((queuedItem): queuedItem is BaseItemDto => Boolean(queuedItem))}
+                  allItems={queue.itemIds}
                   setSortable={setSortable}
                 />
               );

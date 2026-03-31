@@ -79,7 +79,7 @@ export default function Playlist() {
               <ItemListEntry
                 item={item}
                 index={index}
-                allItems={data.items.Items}
+                allItems={data.items.Items!.map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
                 type="playlist"
                 parentId={id}
                 key={item.Id}

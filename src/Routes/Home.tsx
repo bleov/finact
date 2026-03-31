@@ -103,8 +103,14 @@ export function FrequentlyPlayed() {
           <VStack spacing={10} width={"100%"}>
             <Heading level={4}>Frequently Played</Heading>
             <List bordered hover width={"100%"}>
-              {frequentlyPlayed.Items.map((item, idx) => (
-                <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={frequentlyPlayed.Items} />
+              {frequentlyPlayed.Items!.map((item, idx) => (
+                <ItemListEntry
+                  key={item.Id}
+                  item={item}
+                  index={idx}
+                  type="standalone"
+                  allItems={frequentlyPlayed.Items!.map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
+                />
               ))}
             </List>
           </VStack>

@@ -22,7 +22,7 @@ function ItemListEntryComponent({
   item: BaseItemDto;
   index: number;
   type: "queue" | "album" | "playlist" | "standalone";
-  allItems?: BaseItemDto[];
+  allItems?: string[];
   setSortable?: React.Dispatch<React.SetStateAction<boolean>>;
   parentId?: string;
   refresh?: () => void;
@@ -50,7 +50,7 @@ function ItemListEntryComponent({
       {...props}
     >
       <HStack spacing={15} alignItems="center">
-        {type == "queue" && (
+        {/* {type == "queue" && (
           <div
             onMouseEnter={() => {
               setSortable?.(true);
@@ -61,7 +61,7 @@ function ItemListEntryComponent({
           >
             <Icon icon="drag_handle" style={{ color: "var(--rs-text-secondary)" }} noSpace />
           </div>
-        )}
+        )} */}
         {type == "album" && item.IndexNumber && <Text muted>{item.IndexNumber}</Text>}
         {type != "album" && (
           <Avatar src={getAlbumArt(item, 160)}>

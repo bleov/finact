@@ -150,7 +150,14 @@ export default function Album() {
                 <Spacer height={5} />
                 <List bordered hover>
                   {discItems.map((item, index) => (
-                    <ItemListEntry item={item} index={index} type="album" allItems={data.discs.flat()} parentId={id} key={item.Id} />
+                    <ItemListEntry
+                      item={item}
+                      index={index}
+                      type="album"
+                      allItems={data.discs.flat().map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
+                      parentId={id}
+                      key={item.Id}
+                    />
                   ))}
                 </List>
                 <Spacer height={5} />

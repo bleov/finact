@@ -100,7 +100,13 @@ export default function Search() {
                   {category.Type == "Audio" ? (
                     <List bordered hover width={"100%"}>
                       {category.Items.map((item, idx) => (
-                        <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={category.Items} />
+                        <ItemListEntry
+                          key={item.Id}
+                          item={item}
+                          index={idx}
+                          type="standalone"
+                          allItems={category.Items.map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
+                        />
                       ))}
                     </List>
                   ) : (

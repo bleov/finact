@@ -6,26 +6,35 @@ export function playItem(
   setPlaybackState: (state: any) => void,
   setQueue: (queue: Queue | null) => void,
   item: BaseItemDto,
-  allItems?: BaseItemDto[]
+  allItems?: BaseItemDto[] | string[]
 ) {
   void upsertTrackItem(item);
+
+  let queueItemIds: string[] | undefined;
+
   if (allItems && allItems.length > 0) {
-    void upsertTrackItems(allItems);
+    if (typeof allItems[0] === "string") {
+      const idList = allItems as string[];
+      queueItemIds = idList.filter((id): id is string => typeof id === "string" && id.length > 0);
+    } else {
+      const itemList = allItems as BaseItemDto[];
+      void upsertTrackItems(itemList);
+      queueItemIds = itemList.map((x) => x.Id).filter((id): id is string => Boolean(id));
+    }
   }
 
   let queue: Queue;
 
-  if (!allItems) {
+  if (!queueItemIds || queueItemIds.length === 0) {
     queue = {
       itemIds: item.Id ? [item.Id] : [],
       index: 0
     };
   } else {
-    const itemIds = allItems.map((x) => x.Id).filter((id): id is string => Boolean(id));
-    const index = item.Id ? itemIds.findIndex((id) => id === item.Id) : -1;
+    const index = item.Id ? queueItemIds.findIndex((id) => id === item.Id) : -1;
 
     queue = {
-      itemIds,
+      itemIds: queueItemIds,
       index: index >= 0 ? index : 0
     };
   }
