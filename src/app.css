@@ -197,6 +197,16 @@ i.material-icons.no-space {
   padding-block-end: 0 !important;
 }
 
+.background-blurhash {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  filter: brightness(15%) saturate(200%);
+}
+
 @media (max-width: 626px) {
   .stop-btn {
     display: none;

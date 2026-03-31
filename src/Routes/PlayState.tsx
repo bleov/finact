@@ -1,15 +1,12 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { Button, ButtonGroup, Card, Center, Divider, HStack, Image, List, Stack, Text, VStack } from "rsuite";
+import { Center, Image, List, Stack, Text, VStack } from "rsuite";
 import { GlobalState } from "../App";
-import Icon from "../Components/Icon";
 import { getCacheStorage, getStorage } from "../storage";
 import { ItemListEntry } from "../Components/ItemListEntry";
 import Fallback from "../Components/Fallback";
-import { Blurhash } from "react-blurhash";
 import { getAlbumArt } from "../Util/Formatting";
-import { Scrubber } from "react-scrubber";
-import { set } from "rsuite/esm/internals/utils/date";
 import localforage from "localforage";
+import { Blurhash, BlurhashCanvas } from "react-blurhash";
 
 const cacheStorage = getCacheStorage();
 const storage = getStorage();
@@ -88,18 +85,25 @@ export default function PlayState() {
         sm: "row"
       }}
       height={"100%"}
-      // divider={<Divider />}
     >
+      {playbackState && playbackState.item && playbackState.item.ImageBlurHashes?.Primary && (
+        <BlurhashCanvas
+          hash={playbackState.item.ImageBlurHashes.Primary[Object.keys(playbackState.item.ImageBlurHashes.Primary)[0]]}
+          width={500}
+          height={500}
+          className="background-blurhash"
+        />
+      )}
       <Center flex={1} height={"100%"} maxWidth={"50%"}>
         {!playbackState || !playbackState.item ? (
           <Fallback icon="play_circle_outline" text="Nothing is playing" />
         ) : (
           <>
-            <VStack justifyContent="space-between" textAlign="center" align="center" spacing={20} width={"100%"} padding={20}>
+            <VStack justifyContent="space-between" textAlign="center" align="center" spacing={20} width={"100%"} padding={15}>
               <Image
                 borderRadius={"6px"}
                 maxWidth={"40vw"}
-                maxHeight={"40vh"}
+                height={"40vh"}
                 onLoad={(e) => {
                   (e.target as HTMLElement).style.visibility = "visible";
                 }}
@@ -110,8 +114,14 @@ export default function PlayState() {
                     : `${storage.get("serverURL")}/Items/${playbackState.item.Id}/Images/Primary`
                 }
               />
-              <Text size={16}>{playbackState.item.Name}</Text>
-              <Text muted>{playbackState.item.Artists?.join(", ")}</Text>
+              <VStack spacing={0}>
+                <Text size="lg" width={"100%"}>
+                  {playbackState.item.Name}
+                </Text>
+                <Text muted size="md" width={"100%"}>
+                  {playbackState.item.Artists?.join(", ")}
+                </Text>
+              </VStack>
             </VStack>
           </>
         )}
