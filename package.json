@@ -11,7 +11,7 @@
     "dev:electron": "bun run build && NODE_ENV=dev electron app/main.js",
     "build": "vite build --base=./",
     "build:electron": "vite build --base=./ --outDir build/dist && electron-builder",
-    "build:electron:all": "vite build --base=./ --outDir build/dist && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --windows --linux --mac --x64 && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64",
+    "build:electron:all": "vite build --base=./ --outDir build/dist && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --windows --linux --x64 && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
