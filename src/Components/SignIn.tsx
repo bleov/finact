@@ -140,7 +140,7 @@ export function SignIn(props) {
   }
 
   return (
-    <Stack alignItems="center" justifyContent="center" style={{ height: "100%" }}>
+    <Stack alignItems="center" justifyContent="center" height={"100%"}>
       <Panel header="Sign in" bordered>
         {!connected ? <ServerURL /> : <SignInForm />}
       </Panel>

@@ -508,7 +508,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
             </Row>
             <Row justify="space-around" align="middle">
               <Col
-                style={{ flex: 1 }}
+                flex={1}
                 className="pointer"
                 onClick={() => {
                   if (lyricsOpen) setLyricsOpen(false);
@@ -532,7 +532,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
                   </div>
                 </HStack>
               </Col>
-              <Col style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <Col flex={1} display={"flex"} justifyContent={"center"}>
                 <ButtonGroup>
                   <Button appearance="subtle" onClick={previous}>
                     <Icon icon={"skip_previous"} noSpace />
@@ -563,7 +563,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
                   </Button>
                 </ButtonGroup>
               </Col>
-              <Col style={{ flex: 1, display: "flex", justifyContent: "flex-end" }} className="now-playing-buttons">
+              <Col flex={1} display={"flex"} justifyContent={"flex-end"} className="now-playing-buttons">
                 <HStack spacing={9}>
                   <Text muted className="no-select track-time">
                     {formatTimestamp(position / 1000)} / {formatTimestamp(props.state.item?.RunTimeTicks! / 1e7)}
@@ -607,7 +607,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
                     trigger="click"
                     preventOverflow={true}
                     speaker={
-                      <Popover style={{ width: 200 }}>
+                      <Popover width={200}>
                         <Slider progress renderTooltip={() => volume + "%"} defaultValue={100} value={volume} onChange={setVolume} />
                       </Popover>
                     }

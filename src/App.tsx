@@ -148,7 +148,7 @@ function App() {
             <Notification closable type="info" header="Success">
               <Text>{`The ${restoredState ? "current track" : ""}${restoredState && restoredQueue ? " and " : ""}${restoredQueue ? "queue" : ""} ${restoredState && restoredQueue ? " were " : "was"} restored successfully.`}</Text>
               <Button
-                style={{ marginTop: 8 }}
+                marginTop={8}
                 onClick={() => {
                   setPlaybackState(null);
                   setQueue(null);
@@ -192,7 +192,7 @@ function App() {
   return (
     <>
       <GlobalState.Provider value={globalState}>
-        <Container style={{ height: "100%" }}>
+        <Container height={"100%"}>
           <MainHeader user={user} />
           <Content>
             {!user ? (

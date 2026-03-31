@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { List, HStack, VStack, Text, Button, Avatar } from "rsuite";
+import { List, HStack, VStack, Text, Button, Avatar, Box } from "rsuite";
 import { GlobalState } from "../App";
 import { formatTimestamp, getAlbumArt } from "../Util/Formatting";
 import Icon from "./Icon";
@@ -65,11 +65,11 @@ export function ItemListEntry({
                 </Text>
               )}
         </VStack>
-        <HStack.Item alignSelf="flex-end" grow={1} style={{ display: "flex", justifyContent: "flex-end" }}>
+        <Box alignSelf="flex-end" display={"flex"} justifyContent={"flex-end"} grow={1}>
           {isFavorite && (
             <Icon icon="favorite" className="red-400 center-vert" style={{ marginRight: "10px", fontSize: "1.4em" }} noSpace />
           )}
-          <VStack alignItems="center" style={{ marginRight: 5 }}>
+          <VStack alignItems="center" marginRight={5}>
             <Text style={{ marginBlock: "auto" }} muted>
               {formatTimestamp(item.RunTimeTicks! / 10000000)}
             </Text>
@@ -107,7 +107,7 @@ export function ItemListEntry({
               </Button>
             }
           />
-        </HStack.Item>
+        </Box>
       </HStack>
     </List.Item>
   );
