@@ -107,13 +107,14 @@ export default function PlayState() {
                   (e.target as HTMLElement).style.visibility = "visible";
                 }}
                 draggable={false}
+                userSelect={"none"}
                 src={
                   playbackState.item.Type == "Audio"
                     ? getAlbumArt(playbackState.item)
                     : `${storage.get("serverURL")}/Items/${playbackState.item.Id}/Images/Primary`
                 }
               />
-              <VStack spacing={0}>
+              <VStack spacing={0} userSelect={"none"}>
                 <Text size="lg" width={"100%"}>
                   {playbackState.item.Name}
                 </Text>
