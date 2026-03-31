@@ -1,5 +1,5 @@
 import type { BaseItemDto } from "../Client";
-import { asyncStorage } from "../storage";
+import { itemCache } from "../storage";
 
 function getTrackCacheKey(itemId: string) {
   return `track:${itemId}`;
@@ -11,7 +11,7 @@ export async function upsertTrackItem(item: BaseItemDto | null | undefined) {
   }
 
   console.log(`Caching track item: ${item.Name} (${item.Id})`);
-  await asyncStorage.setItem(getTrackCacheKey(item.Id), item);
+  await itemCache.setItem(getTrackCacheKey(item.Id), item);
 }
 
 export async function upsertTrackItems(items: Array<BaseItemDto | null | undefined>) {
@@ -19,7 +19,7 @@ export async function upsertTrackItems(items: Array<BaseItemDto | null | undefin
 }
 
 export async function getCachedTrackItem(itemId: string) {
-  return (await asyncStorage.getItem<BaseItemDto>(getTrackCacheKey(itemId))) ?? null;
+  return (await itemCache.getItem<BaseItemDto>(getTrackCacheKey(itemId))) ?? null;
 }
 
 export async function getCachedTrackItems(itemIds: string[]) {
