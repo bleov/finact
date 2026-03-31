@@ -46,7 +46,7 @@ export function RecentlyAdded() {
         <>
           <VStack spacing={10}>
             <Heading level={4}>Recently Added</Heading>
-            <Grid fluid>
+            <Grid fluid width={"100%"}>
               <Row gutter={16}>
                 {recentItems.map((item, index) => (
                   <ItemTile
@@ -99,7 +99,7 @@ export function FrequentlyPlayed() {
         <>
           <VStack spacing={10}>
             <Heading level={4}>Frequently Played</Heading>
-            <Grid fluid>
+            <Grid fluid width={"100%"}>
               <Row gutter={16}>
                 {frequentlyPlayed.Items.map((item, index) => (
                   <ItemTile

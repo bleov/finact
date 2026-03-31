@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router";
-import { Heading, List, HStack, Avatar, Text, Stat, FlexboxGrid, Image, VStack, Box } from "rsuite";
+import { Heading, List, HStack, Stat, Image, VStack, Box } from "rsuite";
 import { getUser, GlobalState } from "../../App";
 import { formatSeconds } from "../../Util/Formatting";
 import { getStorage } from "../../storage";
@@ -9,7 +9,6 @@ import { ItemListEntry } from "../../Components/ItemListEntry";
 import ItemListActions from "../../Components/ItemListActions";
 import { getItem, getItems } from "../../Client/index";
 import type { BaseItemDtoQueryResult, BaseItemDto } from "../../Client/index";
-import Icon from "../../Components/Icon";
 
 const storage = getStorage();
 
