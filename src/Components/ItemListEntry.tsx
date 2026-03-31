@@ -18,7 +18,7 @@ export function ItemListEntry({
 }: {
   item: BaseItemDto;
   index: number;
-  type: string;
+  type: "queue" | "album" | "playlist" | "standalone";
   allItems?: BaseItemDto[];
   setSortable?: React.Dispatch<React.SetStateAction<boolean>>;
   parentId?: string;

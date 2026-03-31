@@ -1,4 +1,4 @@
-import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box } from "rsuite";
+import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box, List } from "rsuite";
 import Icon from "../Components/Icon";
 import { useState, useContext } from "react";
 import { getStorage } from "../storage";
@@ -9,6 +9,7 @@ import Fallback from "../Components/Fallback";
 import { getItems } from "../Client";
 import type { BaseItemDto, BaseItemKind } from "../Client/index";
 import Spacer from "../Components/Spacer";
+import { ItemListEntry } from "../Components/ItemListEntry";
 
 const storage = getStorage();
 
@@ -96,33 +97,41 @@ export default function Search() {
                 <Box key={index} width={"100%"}>
                   <Heading level={4}>{itemTypeDisplayNames[category.Type as keyof typeof itemTypeDisplayNames] || "Unknown"}</Heading>
                   <Spacer height={10} />
-                  <Grid fluid>
-                    <Row gutter={16}>
-                      {category.Items.map((item) => {
-                        if (!item || item.Id == null) return;
-                        return (
-                          <ItemTile
-                            item={item}
-                            key={item.Id}
-                            tileProps={{
-                              className: "pointer",
-                              onClick: (e) => {
-                                if (item.Type && item.Type == "Audio") {
-                                  playItem(setPlaybackState, setQueue, item, category.Items);
-                                } else if (item.Type == "MusicAlbum") {
-                                  window.location.hash = `#albums/${item.Id}`;
-                                } else if (item.Type == "Playlist") {
-                                  window.location.hash = `#playlists/${item.Id}`;
-                                } else {
-                                  console.warn("Unknown item type", item);
+                  {category.Type == "Audio" ? (
+                    <List bordered hover width={"100%"}>
+                      {category.Items.map((item, idx) => (
+                        <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={category.Items} />
+                      ))}
+                    </List>
+                  ) : (
+                    <Grid fluid>
+                      <Row gutter={16}>
+                        {category.Items.map((item) => {
+                          if (!item || item.Id == null) return;
+                          return (
+                            <ItemTile
+                              item={item}
+                              key={item.Id}
+                              tileProps={{
+                                className: "pointer",
+                                onClick: (e) => {
+                                  if (item.Type && item.Type == "Audio") {
+                                    playItem(setPlaybackState, setQueue, item, category.Items);
+                                  } else if (item.Type == "MusicAlbum") {
+                                    window.location.hash = `#albums/${item.Id}`;
+                                  } else if (item.Type == "Playlist") {
+                                    window.location.hash = `#playlists/${item.Id}`;
+                                  } else {
+                                    console.warn("Unknown item type", item);
+                                  }
                                 }
-                              }
-                            }}
-                          />
-                        );
-                      })}
-                    </Row>
-                  </Grid>
+                              }}
+                            />
+                          );
+                        })}
+                      </Row>
+                    </Grid>
+                  )}
                 </Box>
               );
             })}

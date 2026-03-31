@@ -1,4 +1,4 @@
-import { Heading, Button, Placeholder, Row, Grid, VStack } from "rsuite";
+import { Heading, Button, Placeholder, Row, Grid, VStack, List } from "rsuite";
 import { getUser, GlobalState } from "../App";
 import { useContext, useState, useEffect } from "react";
 import { getLibrary } from "../Util/Network";
@@ -6,6 +6,7 @@ import ItemTile from "../Components/ItemTile";
 import { playItem } from "../Util/Helpers";
 import { getItems, getLatestMedia } from "../Client";
 import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Client/index";
+import { ItemListEntry } from "../Components/ItemListEntry";
 
 export default function Home() {
   return (
@@ -97,24 +98,13 @@ export function FrequentlyPlayed() {
         <Placeholder active />
       ) : (
         <>
-          <VStack spacing={10}>
+          <VStack spacing={10} width={"100%"}>
             <Heading level={4}>Frequently Played</Heading>
-            <Grid fluid width={"100%"}>
-              <Row gutter={16}>
-                {frequentlyPlayed.Items.map((item, index) => (
-                  <ItemTile
-                    item={item}
-                    tileProps={{
-                      onClick: () => {
-                        playItem(setPlaybackState, setQueue, item, frequentlyPlayed.Items);
-                      },
-                      className: "pointer"
-                    }}
-                    key={item.Id}
-                  />
-                ))}
-              </Row>
-            </Grid>
+            <List bordered hover width={"100%"}>
+              {frequentlyPlayed.Items.map((item, idx) => (
+                <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={frequentlyPlayed.Items} />
+              ))}
+            </List>
           </VStack>
         </>
       )}
