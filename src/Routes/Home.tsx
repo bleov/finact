@@ -10,7 +10,6 @@ import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Clien
 export default function Home() {
   return (
     <>
-      <Heading level={3}>Home</Heading>
       <RecentlyAdded />
       <FrequentlyPlayed />
     </>

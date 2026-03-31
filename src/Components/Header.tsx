@@ -12,7 +12,7 @@ import { reportSessionEnded, UserDto } from "../Client";
 const storage = getStorage();
 const cacheStorage = getCacheStorage();
 
-export default function MainHeader(props: { user: UserDto }) {
+export default function MainHeader(props: { user: UserDto | null }) {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [logoEasterEgg, setLogoEasterEgg] = useState(false);
 
@@ -133,6 +133,7 @@ export default function MainHeader(props: { user: UserDto }) {
                     Sign out
                   </MenuItem>
                   {isElectron && (
+                    // @ts-ignore
                     <MenuItem onClick={() => window.electron!.sendMessage(JSON.stringify({ type: "quit" }))}>
                       <Icon icon="close" />
                       Quit

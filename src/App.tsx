@@ -167,6 +167,7 @@ function App() {
     })();
 
     if (isElectron) {
+      // @ts-ignore
       window.electron!.onCommand(async (command) => {
         const data = JSON.parse(command);
         setLastCommand({ ...data, timestamp: Date.now() });
@@ -175,6 +176,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // @ts-ignore
     window.debug = { ...globalState, storage, cacheStorage };
   }, [...Object.values(globalState)]);
 
