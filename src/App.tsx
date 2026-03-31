@@ -3,7 +3,7 @@ import { Container, Content, Loader, useToaster, Notification, Button, Text } fr
 import "rsuite/dist/rsuite.min.css";
 import { SignIn } from "./Components/SignIn";
 import MainHeader from "./Components/Header";
-import { HashRouter, Route, Routes } from "react-router";
+import { HashRouter, Route, Routes, useMatch } from "react-router";
 import Home from "./Routes/Home";
 import Playlists from "./Routes/Playlists";
 import Collections from "./Routes/Collections";
@@ -14,7 +14,7 @@ import Playlist from "./Routes/Playlists/[id]";
 import Album from "./Routes/Albums/[id]";
 import Search from "./Routes/Search";
 import AddItem from "./Components/AddItem";
-import Queue from "./Routes/Queue";
+import PlayState from "./Routes/PlayState";
 import { isElectron, playItem } from "./Util/Helpers";
 import { client } from "./Client/client.gen";
 import { BaseItemDto, UserDto } from "./Client";
@@ -203,7 +203,7 @@ function App() {
                 <HashRouter>
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/queue" element={<Queue />} />
+                    <Route path="/queue" element={<PlayState />} />
                     <Route path="/playlists" element={<Playlists />} />
                     <Route path="/playlists/:id" element={<Playlist />} />
                     <Route path="/collections" element={<Collections />} />
