@@ -1,4 +1,4 @@
-import { Heading, Button, Placeholder, Row, Grid } from "rsuite";
+import { Heading, Button, Placeholder, Row, Grid, VStack } from "rsuite";
 import { getUser, GlobalState } from "../App";
 import { useContext, useState, useEffect } from "react";
 import { getLibrary } from "../Util/Network";
@@ -10,8 +10,10 @@ import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Clien
 export default function Home() {
   return (
     <>
-      <RecentlyAdded />
-      <FrequentlyPlayed />
+      <VStack spacing={16}>
+        <RecentlyAdded />
+        <FrequentlyPlayed />
+      </VStack>
     </>
   );
 }
@@ -42,18 +44,20 @@ export function RecentlyAdded() {
         <Placeholder active />
       ) : (
         <>
-          <Heading level={4}>Recently Added</Heading>
-          <Grid fluid>
-            <Row gutter={16}>
-              {recentItems.map((item, index) => (
-                <ItemTile
-                  item={item}
-                  tileProps={{ onClick: () => (window.location.hash = `#albums/${item.Id}`), className: "pointer" }}
-                  key={item.Id}
-                />
-              ))}
-            </Row>
-          </Grid>
+          <VStack spacing={16}>
+            <Heading level={4}>Recently Added</Heading>
+            <Grid fluid>
+              <Row gutter={16}>
+                {recentItems.map((item, index) => (
+                  <ItemTile
+                    item={item}
+                    tileProps={{ onClick: () => (window.location.hash = `#albums/${item.Id}`), className: "pointer" }}
+                    key={item.Id}
+                  />
+                ))}
+              </Row>
+            </Grid>
+          </VStack>
         </>
       )}
     </>
@@ -93,23 +97,25 @@ export function FrequentlyPlayed() {
         <Placeholder active />
       ) : (
         <>
-          <Heading level={4}>Frequently Played</Heading>
-          <Grid fluid>
-            <Row gutter={16}>
-              {frequentlyPlayed.Items.map((item, index) => (
-                <ItemTile
-                  item={item}
-                  tileProps={{
-                    onClick: () => {
-                      playItem(setPlaybackState, setQueue, item, frequentlyPlayed.Items);
-                    },
-                    className: "pointer"
-                  }}
-                  key={item.Id}
-                />
-              ))}
-            </Row>
-          </Grid>
+          <VStack spacing={16}>
+            <Heading level={4}>Frequently Played</Heading>
+            <Grid fluid>
+              <Row gutter={16}>
+                {frequentlyPlayed.Items.map((item, index) => (
+                  <ItemTile
+                    item={item}
+                    tileProps={{
+                      onClick: () => {
+                        playItem(setPlaybackState, setQueue, item, frequentlyPlayed.Items);
+                      },
+                      className: "pointer"
+                    }}
+                    key={item.Id}
+                  />
+                ))}
+              </Row>
+            </Grid>
+          </VStack>
         </>
       )}
     </>
