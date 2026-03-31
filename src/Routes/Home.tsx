@@ -44,7 +44,7 @@ export function RecentlyAdded() {
         <Placeholder active />
       ) : (
         <>
-          <VStack spacing={16}>
+          <VStack spacing={10}>
             <Heading level={4}>Recently Added</Heading>
             <Grid fluid>
               <Row gutter={16}>
@@ -97,7 +97,7 @@ export function FrequentlyPlayed() {
         <Placeholder active />
       ) : (
         <>
-          <VStack spacing={16}>
+          <VStack spacing={10}>
             <Heading level={4}>Frequently Played</Heading>
             <Grid fluid>
               <Row gutter={16}>
