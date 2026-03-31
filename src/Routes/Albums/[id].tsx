@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext, Fragment } from "react";
 import { useParams } from "react-router";
-import { Heading, List, HStack, Stat, Image, FlexboxGrid } from "rsuite";
-import { getUser, GlobalState } from "../../App";
+import { Heading, List, HStack, Stat, Image, Box } from "rsuite";
+import { GlobalState } from "../../App";
 import { formatSeconds } from "../../Util/Formatting";
 import { getStorage } from "../../storage";
 import Spacer from "../../Components/Spacer";
@@ -9,7 +9,7 @@ import { ItemListEntry } from "../../Components/ItemListEntry";
 import ItemListActions from "../../Components/ItemListActions";
 import Fallback from "../../Components/Fallback";
 import { getItem, getItems } from "../../Client";
-import type { BaseItemDto, BaseItemDtoQueryResult } from "../../Client";
+import type { BaseItemDto } from "../../Client";
 
 const storage = getStorage();
 
@@ -95,45 +95,42 @@ export default function Album() {
       {data ? (
         <>
           <HStack spacing={14} wrap>
-            <Image style={{ height: "128px", borderRadius: "6px" }} src={`${storage.get("serverURL")}/Items/${id}/Images/Primary`} />
+            <Image height={128} rounded bordered src={`${storage.get("serverURL")}/Items/${id}/Images/Primary`} />
             <HStack.Item style={{ flexGrow: "1" }}>
-              <FlexboxGrid style={{ width: "100%" }} align="middle" justify="space-between">
-                <Heading level={3} style={{ marginLeft: 10 }}>
-                  {data.data.Name}
-                </Heading>
-                <ItemListActions items={data.discs.flat()} type="album" parent={data.data} />
-              </FlexboxGrid>
-              <HStack spacing={10} wrap>
-                <Stat className="item-stat">
-                  <Stat.Value value={data.data.ChildCount!} />
-                  <Stat.Label>Tracks</Stat.Label>
-                </Stat>
-                <Stat className="item-stat">
-                  <Stat.Value>{formatSeconds(data.data.CumulativeRunTimeTicks! / 10000000, true, false)}</Stat.Value>
-                  <Stat.Label>Run Time</Stat.Label>
-                </Stat>
-                {data.data.ProductionYear && (
-                  <Stat className="item-stat">
-                    <Stat.Value>{data.data.ProductionYear}</Stat.Value>
-                    <Stat.Label>Year</Stat.Label>
-                  </Stat>
-                )}
-                {data.data.Genres && data.data.Genres.length > 0 && (
-                  <Stat className="item-stat">
-                    <Stat.Value>{data.data.Genres[0]}</Stat.Value>
-                    <Stat.Label>Genre</Stat.Label>
-                  </Stat>
-                )}
+              <Heading level={3} marginLeft={10}>
+                {data.data.Name}
+              </Heading>
+              <HStack spacing={10} justify={"space-between"} wrap>
+                <Box flexGrow={2}>
+                  <HStack spacing={5} wrap>
+                    <Stat className="item-stat">
+                      <Stat.Value value={data.data.ChildCount!} />
+                      <Stat.Label>Tracks</Stat.Label>
+                    </Stat>
+                    <Stat className="item-stat">
+                      <Stat.Value>{formatSeconds(data.data.CumulativeRunTimeTicks! / 10000000, true, false)}</Stat.Value>
+                      <Stat.Label>Run Time</Stat.Label>
+                    </Stat>
+                    {data.data.ProductionYear && (
+                      <Stat className="item-stat">
+                        <Stat.Value>{data.data.ProductionYear}</Stat.Value>
+                        <Stat.Label>Year</Stat.Label>
+                      </Stat>
+                    )}
+                    {data.data.Genres && data.data.Genres.length > 0 && (
+                      <Stat className="item-stat">
+                        <Stat.Value>{data.data.Genres[0]}</Stat.Value>
+                        <Stat.Label>Genre</Stat.Label>
+                      </Stat>
+                    )}
+                  </HStack>
+                </Box>
+                <Box alignSelf={"flex-end"}>
+                  <ItemListActions items={data.discs.flat()} type="album" parent={data.data} />
+                </Box>
               </HStack>
             </HStack.Item>
           </HStack>
-          {/* <Spacer height={10} /> */}
-          {/* {data.data.Overview && data.data.Overview.length > 0 && (
-            <>
-              <Text>{data.data.Overview}</Text>
-              <Spacer height={10} />
-            </>
-          )} */}
 
           <Spacer height={10} />
 
@@ -149,7 +146,7 @@ export default function Album() {
                   </>
                 )}
                 <Spacer height={5} />
-                <List bordered hover /*sortable onSort={handleSortEnd}*/>
+                <List bordered hover>
                   {discItems.map((item, index) => (
                     <ItemListEntry item={item} index={index} type="album" allItems={data.discs.flat()} parentId={id} key={item.Id} />
                   ))}

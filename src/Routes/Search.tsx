@@ -1,6 +1,6 @@
-import { Heading, Input, InputGroup, Text, Form, Grid, Row, FlexboxGrid, VStack, Box } from "rsuite";
+import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box } from "rsuite";
 import Icon from "../Components/Icon";
-import { useState, Fragment, useContext } from "react";
+import { useState, useContext } from "react";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
 import { GlobalState } from "../App";

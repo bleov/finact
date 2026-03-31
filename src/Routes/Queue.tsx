@@ -1,7 +1,6 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Card, FlexboxGrid, List, Text, VStack } from "rsuite";
+import { useContext, useState } from "react";
+import { List } from "rsuite";
 import { GlobalState } from "../App";
-import Icon from "../Components/Icon";
 import { getCacheStorage } from "../storage";
 import { ItemListEntry } from "../Components/ItemListEntry";
 import Fallback from "../Components/Fallback";
