@@ -1,7 +1,7 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Heading, List, HStack, Stat, Image, VStack, Box } from "rsuite";
-import { getUser, GlobalState } from "../../App";
+import { getUser } from "../../App";
 import { formatSeconds } from "../../Util/Formatting";
 import { getStorage } from "../../storage";
 import Spacer from "../../Components/Spacer";
@@ -9,6 +9,8 @@ import { ItemListEntry } from "../../Components/ItemListEntry";
 import ItemListActions from "../../Components/ItemListActions";
 import { getItem, getItems } from "../../Client/index";
 import type { BaseItemDtoQueryResult, BaseItemDto } from "../../Client/index";
+import { useAppDispatch } from "../../store/hooks";
+import { setLoading } from "../../store/slices/loadingSlice";
 
 const storage = getStorage();
 
@@ -20,7 +22,7 @@ export default function Playlist() {
     items: BaseItemDtoQueryResult;
   } | null>(null);
 
-  const { loading, setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
 
   const fetchPlaylistData = async () => {
     const responses = await Promise.all([
@@ -36,11 +38,11 @@ export default function Playlist() {
       })
     ]);
     setData({ data: responses[0].data!, items: responses[1].data! });
-    setLoading(false);
+    dispatch(setLoading(false));
   };
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     fetchPlaylistData();
   }, [id]);
 

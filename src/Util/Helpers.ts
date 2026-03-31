@@ -1,10 +1,9 @@
-import { useContext } from "react";
-import { GlobalState, Queue } from "../App";
 import { BaseItemDto } from "../Client";
+import type { Queue } from "../store/slices/queueSlice";
 
 export function playItem(
-  setPlaybackState,
-  setQueue: React.Dispatch<React.SetStateAction<Queue | null>>,
+  setPlaybackState: (state: any) => void,
+  setQueue: (queue: Queue | null) => void,
   item: BaseItemDto,
   allItems?: BaseItemDto[]
 ) {

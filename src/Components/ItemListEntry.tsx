@@ -1,13 +1,15 @@
-import { useContext, useState } from "react";
+import { memo, useState } from "react";
 import { List, HStack, VStack, Text, Button, Avatar, Box } from "rsuite";
-import { GlobalState } from "../App";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { formatTimestamp, getAlbumArt } from "../Util/Formatting";
 import Icon from "./Icon";
 import ItemContextMenu from "./ItemContextMenu";
 import { playItem } from "../Util/Helpers";
 import type { BaseItemDto } from "../Client";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
 
-export function ItemListEntry({
+function ItemListEntryComponent({
   item,
   index,
   type,
@@ -26,8 +28,11 @@ export function ItemListEntry({
   refresh?: () => void;
   props?: React.HTMLAttributes<HTMLElement>;
 }) {
-  const { setQueue, setPlaybackState } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const queue = useAppSelector((state) => state.queue);
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
+
+  console.log("rendering item list entry");
 
   return (
     <List.Item
@@ -35,7 +40,12 @@ export function ItemListEntry({
       index={index}
       className="pointer"
       onClick={async () => {
-        playItem(setPlaybackState, setQueue, item, allItems);
+        playItem(
+          (state) => dispatch(setPlaybackState(state)),
+          (state) => dispatch(setQueue(state)),
+          item,
+          allItems
+        );
       }}
       {...props}
     >
@@ -83,11 +93,11 @@ export function ItemListEntry({
               className="square"
               onClick={(e) => {
                 e.stopPropagation();
-                setQueue((prevState) => {
-                  const newItems = [...prevState!.items];
+                if (queue) {
+                  const newItems = [...queue.items];
                   newItems.splice(index, 1);
-                  return { ...prevState!, items: newItems };
-                });
+                  dispatch(setQueue({ ...queue, items: newItems }));
+                }
               }}
             >
               <Icon icon="remove_circle_outline" noSpace />
@@ -115,3 +125,5 @@ export function ItemListEntry({
     </List.Item>
   );
 }
+
+export const ItemListEntry = memo(ItemListEntryComponent);

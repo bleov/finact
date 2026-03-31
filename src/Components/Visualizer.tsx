@@ -1,5 +1,6 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { GlobalState } from "../App";
+import React, { useEffect, useRef } from "react";
+import { useAppDispatch } from "../store/hooks";
+import { setLoading } from "../store/slices/loadingSlice";
 
 const canvasStyle: React.CSSProperties = {
   position: "fixed",
@@ -25,7 +26,7 @@ export function isButterchurnSupported() {
 }
 
 export default function Visualizer(props) {
-  const { setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
 
   const canvasRef = useRef(null);
   const presetIndex = useRef(0);
@@ -37,7 +38,7 @@ export default function Visualizer(props) {
     const audioContext = props.audioContextRef.current;
     const gainNode = props.gainNodeRef.current;
     let closing = false;
-    setLoading(true);
+    dispatch(setLoading(true));
     async function setup() {
       const butterchurn = (await import("butterchurn")).default.default;
       const butterchurnPresets = (await import("butterchurn-presets")).default;
@@ -55,7 +56,7 @@ export default function Visualizer(props) {
 
       visualizer.loadPreset(Object.values(presets.current)[0]);
 
-      setLoading(false);
+      dispatch(setLoading(false));
       function render() {
         visualizer.render();
 

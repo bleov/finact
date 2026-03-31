@@ -1,19 +1,20 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Heading, Grid, Row, VStack } from "rsuite";
-import { GlobalState } from "../../App";
 import ItemTile from "../../Components/ItemTile";
 import { getItems } from "../../Client";
 import type { BaseItemDtoQueryResult } from "../../Client/index";
+import { useAppDispatch } from "../../store/hooks";
+import { setLoading } from "../../store/slices/loadingSlice";
 
 export default function Collection() {
   const { id } = useParams();
 
   const [items, setItems] = useState<BaseItemDtoQueryResult | null>(null);
-  const { loading, setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     const fetchCollectionItems = async () => {
       const itemsResponse = await getItems({
         query: {
@@ -24,7 +25,7 @@ export default function Collection() {
 
       setItems(itemsResponse.data!);
 
-      setLoading(false);
+      dispatch(setLoading(false));
     };
 
     fetchCollectionItems();

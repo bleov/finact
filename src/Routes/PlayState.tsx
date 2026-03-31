@@ -1,18 +1,21 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Center, Image, List, Stack, Text, VStack } from "rsuite";
-import { GlobalState } from "../App";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { getCacheStorage, getStorage } from "../storage";
 import { ItemListEntry } from "../Components/ItemListEntry";
 import Fallback from "../Components/Fallback";
 import { getAlbumArt } from "../Util/Formatting";
 import localforage from "localforage";
 import { Blurhash, BlurhashCanvas } from "react-blurhash";
+import { setQueue } from "../store/slices/queueSlice";
 
 const cacheStorage = getCacheStorage();
 const storage = getStorage();
 
 function Queue() {
-  const { queue, setQueue, playbackState } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const queue = useAppSelector((state) => state.queue);
+  const playbackState = useAppSelector((state) => state.playback);
   const [sortable, setSortable] = useState(false);
 
   const handleSortEnd = ({
@@ -24,13 +27,14 @@ function Queue() {
     newIndex: number;
     collection: number | string;
     node: HTMLElement;
-  }) =>
-    setQueue(() => {
-      const moveData = queue!.items.splice(oldIndex, 1);
-      const newData = [...queue!.items];
+  }) => {
+    if (queue) {
+      const moveData = queue.items.splice(oldIndex, 1);
+      const newData = [...queue.items];
       newData.splice(newIndex, 0, moveData[0]);
-      return { ...queue!, items: newData };
-    });
+      dispatch(setQueue({ ...queue, items: newData }));
+    }
+  };
 
   return (
     <Stack.Item flex={1} className="queue" height={"100%"} overflow={"auto"}>
@@ -64,7 +68,7 @@ function Queue() {
 }
 
 export default function PlayState() {
-  const { playbackState } = useContext(GlobalState);
+  const playbackState = useAppSelector((state) => state.playback);
   const [position, setPosition] = useState(0);
 
   useEffect(() => {

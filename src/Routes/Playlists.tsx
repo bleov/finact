@@ -1,15 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Grid, Heading, Row, VStack } from "rsuite";
 import { getLibrary } from "../Util/Network";
-import { getUser, GlobalState } from "../App";
+import { getUser } from "../App";
 import ItemTile from "../Components/ItemTile";
 import Fallback from "../Components/Fallback";
 import { getItems } from "../Client";
 import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Client/index";
+import { useAppDispatch } from "../store/hooks";
+import { setLoading } from "../store/slices/loadingSlice";
 
 export default function Playlists() {
   const [playlists, setPlaylists] = useState<BaseItemDtoQueryResult | null>(null);
-  const { loading, setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
   const [error, setError] = useState("");
   const [errorIcon, setErrorIcon] = useState("apps_outage");
 
@@ -17,7 +19,7 @@ export default function Playlists() {
     function handleError(err: Error) {
       console.error(err);
 
-      setLoading(false);
+      dispatch(setLoading(false));
 
       if (err.toString().includes("not found")) {
         setError("No playlists yet");
@@ -30,7 +32,7 @@ export default function Playlists() {
       }
     }
 
-    setLoading(true);
+    dispatch(setLoading(true));
     getLibrary("playlists")
       .then((playlistsLibrary) => {
         getItems({
@@ -45,7 +47,7 @@ export default function Playlists() {
           }
         }).then((playlistsResponse) => {
           setPlaylists(playlistsResponse.data!);
-          setLoading(false);
+          dispatch(setLoading(false));
         });
       })
       .catch(handleError);

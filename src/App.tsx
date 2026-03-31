@@ -1,6 +1,7 @@
-import { useState, createContext, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Container, Content, Loader, useToaster, Notification, Button, Text } from "rsuite";
 import "rsuite/dist/rsuite.min.css";
+import { Provider } from "react-redux";
 import { SignIn } from "./Components/SignIn";
 import MainHeader from "./Components/Header";
 import { HashRouter, Route, Routes, useMatch } from "react-router";
@@ -21,6 +22,14 @@ import { BaseItemDto, UserDto } from "./Client";
 import { ToastContainerProps } from "rsuite/esm/toaster/ToastContainer";
 import { getDeviceId } from "./Util/Formatting";
 import { getStorage, getCacheStorage } from "./storage";
+import { store } from "./store/store";
+import { useAppDispatch, useAppSelector } from "./store/hooks";
+import { setPlaybackState } from "./store/slices/playbackSlice";
+import { setQueue } from "./store/slices/queueSlice";
+import { setLoading } from "./store/slices/loadingSlice";
+import { setAddItem } from "./store/slices/addItemSlice";
+import { setAddItemType } from "./store/slices/addItemTypeSlice";
+import { setLastCommand } from "./store/slices/lastCommandSlice";
 
 const storage = getStorage();
 const cacheStorage = getCacheStorage();
@@ -51,78 +60,24 @@ export function getUser() {
   }
 }
 
-export interface Queue {
-  items: BaseItemDto[];
-  index: number;
-}
-
-export interface LastCommand {
-  type: "play-item" | "pause" | "resume" | "stop" | "next" | "previous" | "set-volume" | "seek" | "set-repeat";
-  itemId?: string;
-  volume?: number;
-  position?: number;
-  mode?: "none" | "one" | "all";
-}
-
-export interface PlaybackState {
-  item?: BaseItemDto;
-  position?: number;
-  playing?: boolean;
-}
-
-export const GlobalState = createContext<{
-  playbackState: PlaybackState | null;
-  setPlaybackState: React.Dispatch<React.SetStateAction<PlaybackState | null>>;
-  loading: boolean;
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  toaster: {
-    push: (message: React.ReactNode, options?: ToastContainerProps) => string | Promise<string | undefined> | undefined;
-    remove: (key: string) => void;
-    clear: () => void;
-  };
-  addItem: BaseItemDto | null;
-  setAddItem: React.Dispatch<React.SetStateAction<BaseItemDto | null>>;
-  addItemType: string | null;
-  setAddItemType: React.Dispatch<React.SetStateAction<string | null>>;
-  queue: Queue | null;
-  setQueue: React.Dispatch<React.SetStateAction<Queue | null>>;
-  lastCommand: LastCommand | null;
-  setLastCommand: React.Dispatch<React.SetStateAction<LastCommand | null>>;
-}>(null!);
-
-function App() {
+function AppContent() {
   const [user, setUser] = useState<UserDto | null>(getUser);
-  const [playbackState, setPlaybackState] = useState<PlaybackState | null>(null);
-  const [queue, setQueue] = useState<Queue | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [addItem, setAddItem] = useState<BaseItemDto | null>(null);
-  const [addItemType, setAddItemType] = useState<string | null>(null);
-  const [lastCommand, setLastCommand] = useState<LastCommand | null>(null);
   const queueAndStateInitialized = useRef(false);
 
-  const toaster = useToaster();
+  const dispatch = useAppDispatch();
+  const playbackState = useAppSelector((state) => state.playback);
+  const queue = useAppSelector((state) => state.queue);
+  const loading = useAppSelector((state) => state.loading);
+  const addItem = useAppSelector((state) => state.addItem);
+  const addItemType = useAppSelector((state) => state.addItemType);
 
-  const globalState = {
-    playbackState,
-    setPlaybackState,
-    loading,
-    setLoading,
-    toaster,
-    addItem,
-    setAddItem,
-    addItemType,
-    setAddItemType,
-    queue,
-    setQueue,
-    lastCommand,
-    setLastCommand
-  };
+  const toaster = useToaster();
 
   useEffect(() => {
     (async () => {
       if (user) {
-        const savedState = storage.get<PlaybackState>("playbackState");
-        const savedQueue = storage.get<Queue>("queue");
+        const savedState = storage.get<typeof playbackState>("playbackState");
+        const savedQueue = storage.get<typeof queue>("queue");
         const savedPosition = storage.get<number>("position");
         let restoredState = false;
         let restoredQueue = false;
@@ -133,12 +88,12 @@ function App() {
           if (savedPosition) {
             savedState.position = savedPosition / 1000;
           }
-          setPlaybackState(savedState);
+          dispatch(setPlaybackState(savedState));
           console.log("Restoring playback state");
           restoredState = true;
         }
         if (savedQueue) {
-          setQueue(savedQueue);
+          dispatch(setQueue(savedQueue));
           console.log("Restoring queue");
           restoredQueue = true;
         }
@@ -150,8 +105,8 @@ function App() {
               <Button
                 marginTop={8}
                 onClick={() => {
-                  setPlaybackState(null);
-                  setQueue(null);
+                  dispatch(setPlaybackState(null));
+                  dispatch(setQueue(null));
                   toaster.clear();
                 }}
               >
@@ -170,15 +125,10 @@ function App() {
       // @ts-ignore
       window.electron!.onCommand(async (command) => {
         const data = JSON.parse(command);
-        setLastCommand({ ...data, timestamp: Date.now() });
+        dispatch(setLastCommand({ ...data }));
       });
     }
   }, []);
-
-  useEffect(() => {
-    // @ts-ignore
-    window.debug = { ...globalState, storage, cacheStorage };
-  }, [...Object.values(globalState)]);
 
   useEffect(() => {
     if (!queueAndStateInitialized.current) {
@@ -190,37 +140,41 @@ function App() {
   }, [playbackState, queue]);
 
   return (
-    <>
-      <GlobalState.Provider value={globalState}>
-        <Container height={"100%"}>
-          <MainHeader user={user} />
-          <Content>
-            {!user ? (
-              <SignIn setUser={setUser} />
-            ) : (
-              <>
-                <AddItem item={addItem} type={addItemType!} />
-                <HashRouter>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/queue" element={<PlayState />} />
-                    <Route path="/playlists" element={<Playlists />} />
-                    <Route path="/playlists/:id" element={<Playlist />} />
-                    <Route path="/collections" element={<Collections />} />
-                    <Route path="/collections/:id" element={<Collection />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/albums/:id" element={<Album />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </HashRouter>
-              </>
-            )}
-          </Content>
-          {user && playbackState && <PlayBar state={playbackState} />}
-          {loading && <Loader backdrop vertical size="lg" />}
-        </Container>
-      </GlobalState.Provider>
-    </>
+    <Container height={"100%"}>
+      <MainHeader user={user} />
+      <Content>
+        {!user ? (
+          <SignIn setUser={setUser} />
+        ) : (
+          <>
+            <AddItem item={addItem} type={addItemType!} />
+            <HashRouter>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/queue" element={<PlayState />} />
+                <Route path="/playlists" element={<Playlists />} />
+                <Route path="/playlists/:id" element={<Playlist />} />
+                <Route path="/collections" element={<Collections />} />
+                <Route path="/collections/:id" element={<Collection />} />
+                <Route path="/search" element={<Search />} />
+                <Route path="/albums/:id" element={<Album />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </HashRouter>
+          </>
+        )}
+      </Content>
+      {user && playbackState && Object.keys(playbackState).length > 0 && <PlayBar />}
+      {loading && <Loader backdrop vertical size="lg" />}
+    </Container>
+  );
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 }
 

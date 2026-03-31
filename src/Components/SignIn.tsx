@@ -1,9 +1,8 @@
 import { Form, InputGroup, Stack, Panel, useToaster, Notification } from "rsuite";
 import { getStorage } from "../storage";
 import { getLibrary } from "../Util/Network";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import Icon from "./Icon";
-import { GlobalState } from "../App";
 import { errorNotification } from "../Util/Toaster";
 import { authenticateUserByName, getPublicSystemInfo } from "../Client";
 import { client } from "../Client/client.gen";
@@ -14,7 +13,7 @@ export function SignIn(props) {
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { toaster } = useContext(GlobalState);
+  const toaster = useToaster();
 
   function ServerURL() {
     const styles = {

@@ -1,7 +1,6 @@
-import { useEffect, useState, useContext, Fragment } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useParams } from "react-router";
 import { Heading, List, HStack, Stat, Image, Box } from "rsuite";
-import { GlobalState } from "../../App";
 import { formatSeconds } from "../../Util/Formatting";
 import { getStorage } from "../../storage";
 import Spacer from "../../Components/Spacer";
@@ -10,6 +9,8 @@ import ItemListActions from "../../Components/ItemListActions";
 import Fallback from "../../Components/Fallback";
 import { getItem, getItems } from "../../Client";
 import type { BaseItemDto } from "../../Client";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { setLoading } from "../../store/slices/loadingSlice";
 
 const storage = getStorage();
 
@@ -47,10 +48,11 @@ export default function Album() {
   } | null>(null);
   const [error, setError] = useState("");
   const [errorIcon, setErrorIcon] = useState("album");
-  const { loading, setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector((state) => state.loading);
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     const fetchPlaylistData = async () => {
       try {
         const responses = await Promise.all([
@@ -83,7 +85,7 @@ export default function Album() {
         }
         setData(null);
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     };
 

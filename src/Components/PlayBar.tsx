@@ -1,7 +1,7 @@
 import { Avatar, Button, ButtonGroup, HStack, VStack, Navbar, Text, Footer, Whisper, Popover, Slider, Row, Col } from "rsuite";
 import { getStorage } from "../storage";
-import { useContext, useEffect, useRef, useState } from "react";
-import { getUser, GlobalState, PlaybackState } from "../App";
+import { useEffect, useRef, useState } from "react";
+import { getUser } from "../App";
 import { formatTimestamp, getAlbumArt, getPWADisplayMode } from "../Util/Formatting";
 import Icon from "./Icon";
 import ItemContextMenu from "./ItemContextMenu";
@@ -13,14 +13,21 @@ import Lyrics from "./Lyrics";
 import { isElectron, playItem } from "../Util/Helpers";
 import localforage from "localforage";
 import { getItem, getItems, reportPlaybackProgress, reportPlaybackStart, reportPlaybackStopped } from "../Client";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
+import type { PlaybackState } from "../store/slices/playbackSlice";
 
 interface ExtendedAudioElement extends HTMLAudioElement {
   sourceNode?: MediaElementAudioSourceNode;
 }
 
-export default function PlayBar(props: { state: PlaybackState }) {
+export default function PlayBar() {
   const audioRef = useRef<ExtendedAudioElement | null>(null);
-  const { playbackState, setPlaybackState, queue, setQueue, lastCommand } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const playbackState = useAppSelector((state) => state.playback);
+  const queue = useAppSelector((state) => state.queue);
+  const lastCommand = useAppSelector((state) => state.lastCommand);
   const [visualizerOpen, setVisualizerOpen] = useState(false);
   const [lyricsOpen, setLyricsOpen] = useState(false);
   const [position, setPosition] = useState(0);
@@ -85,23 +92,23 @@ export default function PlayBar(props: { state: PlaybackState }) {
 
   useEffect(() => {
     if (audioRef.current) {
-      if (props.state.item && props.state.item.NormalizationGain && gainNodeRef.current) {
-        gainNodeRef.current.gain.value = Math.pow(10, props.state.item.NormalizationGain / 20);
+      if (playbackState?.item && playbackState.item.NormalizationGain && gainNodeRef.current) {
+        gainNodeRef.current.gain.value = Math.pow(10, playbackState.item.NormalizationGain / 20);
       } else {
         if (gainNodeRef.current) gainNodeRef.current.gain.value = 1;
       }
-      if (props.state.playing) {
-        if (!props.state.item) return;
+      if (playbackState?.playing) {
+        if (!playbackState.item) return;
         audioRef.current.play();
-        if (props.state.position == 0) {
-          setPosition(props.state.position);
+        if (playbackState.position == 0) {
+          setPosition(playbackState.position);
 
           try {
             if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
               reportPlaybackStart({
                 body: {
                   CanSeek: false,
-                  ItemId: props.state.item.Id,
+                  ItemId: playbackState.item.Id,
                   IsPaused: false,
                   IsMuted: false,
                   PositionTicks: 0,
@@ -113,20 +120,20 @@ export default function PlayBar(props: { state: PlaybackState }) {
       } else {
         audioRef.current.pause();
       }
-      if (props.state.position && props.state.position > 0) audioRef.current.currentTime = props.state.position;
+      if (playbackState?.position && playbackState.position > 0) audioRef.current.currentTime = playbackState.position;
     }
 
     if ("mediaSession" in navigator) {
       const mediaSession = navigator.mediaSession;
-      if (!props.state.item) return;
+      if (!playbackState?.item) return;
 
       mediaSession.metadata = new MediaMetadata({
-        title: props.state.item.Name!,
-        artist: props.state.item.Artists!.join(" / "),
-        album: props.state.item.Album!,
+        title: playbackState.item.Name!,
+        artist: playbackState.item.Artists!.join(" / "),
+        album: playbackState.item.Album!,
         artwork: [
           {
-            src: getAlbumArt(props.state.item),
+            src: getAlbumArt(playbackState.item),
             sizes: "512x512",
             type: "image/jpeg"
           }
@@ -148,7 +155,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
       });
 
       if (getPWADisplayMode() == "browser" && !isElectron) {
-        document.title = `${props.state.item.Name} - ${getArtistDisplay(props.state.item.Artists)} - Finact`;
+        document.title = `${playbackState.item.Name} - ${getArtistDisplay(playbackState.item.Artists)} - Finact`;
       } else {
         document.title = "Finact";
       }
@@ -164,8 +171,8 @@ export default function PlayBar(props: { state: PlaybackState }) {
       );
     }
 
-    isPlayingRef.current = props.state.playing!;
-  }, [props.state]);
+    isPlayingRef.current = playbackState?.playing!;
+  }, [playbackState]);
 
   if (isElectron) {
     useEffect(() => {
@@ -181,20 +188,22 @@ export default function PlayBar(props: { state: PlaybackState }) {
 
   function handleTimeUpdate(e: number) {
     const newTime = e / 1000;
-    setPlaybackState((prevState) => ({
-      ...prevState,
-      position: newTime
-    }));
+    dispatch(
+      setPlaybackState({
+        ...playbackState,
+        position: newTime
+      })
+    );
     setPosition(e);
-    if (!props.state.item) return;
+    if (!playbackState?.item) return;
 
     try {
       if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
         reportPlaybackProgress({
           body: {
             CanSeek: false,
-            ItemId: props.state.item.Id,
-            IsPaused: !props.state.playing,
+            ItemId: playbackState?.item?.Id,
+            IsPaused: !playbackState?.playing,
             IsMuted: false,
             PositionTicks: Math.floor(position * 10000),
             VolumeLevel: volume
@@ -262,7 +271,11 @@ export default function PlayBar(props: { state: PlaybackState }) {
             return;
           }
           if (itemData.Type == "Audio") {
-            playItem(setPlaybackState, setQueue, itemData);
+            playItem(
+              (state) => dispatch(setPlaybackState(state)),
+              (state) => dispatch(setQueue(state)),
+              itemData
+            );
           }
           if (itemData.Type == "MusicAlbum" || itemData.Type == "Playlist") {
             const query: Record<string, any> = {
@@ -277,7 +290,12 @@ export default function PlayBar(props: { state: PlaybackState }) {
             const items = itemsResponse.data!.Items;
 
             if (items && items.length > 0) {
-              playItem(setPlaybackState, setQueue, items[0], items);
+              playItem(
+                (state) => dispatch(setPlaybackState(state)),
+                (state) => dispatch(setQueue(state)),
+                items[0],
+                items
+              );
             } else {
               console.warn("Received play command for empty album/playlist");
             }
@@ -308,10 +326,12 @@ export default function PlayBar(props: { state: PlaybackState }) {
         case "seek":
           if (!lastCommand) return;
           if (typeof lastCommand.position === "number") {
-            setPlaybackState((prevState) => ({
-              ...prevState,
-              position: lastCommand.position
-            }));
+            dispatch(
+              setPlaybackState({
+                ...playbackState,
+                position: lastCommand.position
+              })
+            );
             setPosition(lastCommand.position * 1000);
           }
           break;
@@ -330,10 +350,12 @@ export default function PlayBar(props: { state: PlaybackState }) {
       return;
     }
 
-    setPlaybackState((prevState) => ({
-      ...prevState,
-      playing: true
-    }));
+    dispatch(
+      setPlaybackState({
+        ...playbackState,
+        playing: true
+      })
+    );
 
     setPosition(audioRef.current.currentTime * 1000);
 
@@ -341,7 +363,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
       reportPlaybackProgress({
         body: {
           CanSeek: false,
-          ItemId: props.state.item?.Id,
+          ItemId: playbackState.item?.Id,
           IsPaused: false,
           IsMuted: false,
           PositionTicks: Math.floor(position * 10000),
@@ -355,11 +377,13 @@ export default function PlayBar(props: { state: PlaybackState }) {
       return;
     }
 
-    setPlaybackState((prevState) => ({
-      ...prevState,
-      position: audioRef.current!.currentTime,
-      playing: false
-    }));
+    dispatch(
+      setPlaybackState({
+        ...playbackState,
+        position: audioRef.current!.currentTime,
+        playing: false
+      })
+    );
 
     setPosition(audioRef.current.currentTime * 1000);
 
@@ -367,7 +391,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
       reportPlaybackProgress({
         body: {
           CanSeek: false,
-          ItemId: props.state.item?.Id,
+          ItemId: playbackState.item?.Id,
           IsPaused: true,
           IsMuted: false,
           PositionTicks: Math.floor(position * 10000),
@@ -383,15 +407,19 @@ export default function PlayBar(props: { state: PlaybackState }) {
         if (repeat === "all") {
           // loop back to the first song
           const firstItem = queue.items[0];
-          setPlaybackState({
-            item: firstItem,
-            playing: true,
-            position: 0
-          });
-          setQueue({
-            items: queue.items,
-            index: 0
-          });
+          dispatch(
+            setPlaybackState({
+              item: firstItem,
+              playing: true,
+              position: 0
+            })
+          );
+          dispatch(
+            setQueue({
+              items: queue.items,
+              index: 0
+            })
+          );
           return;
         }
         // end playback on the last song
@@ -399,15 +427,19 @@ export default function PlayBar(props: { state: PlaybackState }) {
         return;
       }
       const nextItem = queue.items[queue.index + 1];
-      setPlaybackState({
-        item: nextItem,
-        playing: true,
-        position: 0
-      });
-      setQueue({
-        items: queue.items,
-        index: queue.index + 1
-      });
+      dispatch(
+        setPlaybackState({
+          item: nextItem,
+          playing: true,
+          position: 0
+        })
+      );
+      dispatch(
+        setQueue({
+          items: queue.items,
+          index: queue.index + 1
+        })
+      );
     } else {
       stop();
     }
@@ -417,33 +449,41 @@ export default function PlayBar(props: { state: PlaybackState }) {
     if (!audioRef.current) return;
     if (queue && audioRef.current.currentTime < 4) {
       if (queue.index == 0) {
-        setPlaybackState((prevState) => ({
-          ...prevState,
-          position: 0
-        }));
+        dispatch(
+          setPlaybackState({
+            ...playbackState,
+            position: 0
+          })
+        );
         return;
       }
       const prevItem = queue.items[queue.index - 1];
-      setPlaybackState({
-        item: prevItem,
-        playing: true,
-        position: 0
-      });
-      setQueue({
-        items: queue.items,
-        index: queue.index - 1
-      });
+      dispatch(
+        setPlaybackState({
+          item: prevItem,
+          playing: true,
+          position: 0
+        })
+      );
+      dispatch(
+        setQueue({
+          items: queue.items,
+          index: queue.index - 1
+        })
+      );
     } else {
-      setPlaybackState((prevState) => ({
-        ...prevState,
-        position: 0
-      }));
+      dispatch(
+        setPlaybackState({
+          ...playbackState,
+          position: 0
+        })
+      );
     }
   }
 
   function stop() {
-    setPlaybackState(null);
-    setQueue(null);
+    dispatch(setPlaybackState(null));
+    dispatch(setQueue(null));
 
     try {
       if (import.meta.env.VITE_ENABLE_PLAYBACK_REPORTING !== "false")
@@ -459,14 +499,16 @@ export default function PlayBar(props: { state: PlaybackState }) {
         className="playback-audio"
         ref={audioRef}
         crossOrigin="anonymous"
-        src={`${storage.get("serverURL")}/Audio/${props.state.item?.Id}/Universal?itemId=${props.state.item?.Id}&deviceId=${storage.get("DeviceId")}&userId=${getUser()?.Id}&Container=opus,webm|opus,ts|mp3,mp3,aac,m4a|aac,m4b|aac,flac,webma,webm|webma,wav,ogg&api_key=${storage.get("AccessToken")}`}
+        src={`${storage.get("serverURL")}/Audio/${playbackState?.item?.Id}/Universal?itemId=${playbackState?.item?.Id}&deviceId=${storage.get("DeviceId")}&userId=${getUser()?.Id}&Container=opus,webm|opus,ts|mp3,mp3,aac,m4a|aac,m4b|aac,flac,webma,webm|webma,wav,ogg&api_key=${storage.get("AccessToken")}`}
         playsInline={true}
         onEnded={(e) => {
           if (repeat === "one") {
-            setPlaybackState((prevState) => ({
-              ...prevState,
-              position: 0
-            }));
+            dispatch(
+              setPlaybackState({
+                ...playbackState,
+                position: 0
+              })
+            );
             return;
           } else {
             next();
@@ -474,14 +516,14 @@ export default function PlayBar(props: { state: PlaybackState }) {
         }}
       />
       {visualizerOpen ? <Visualizer audioContextRef={audioContextRef} gainNodeRef={gainNodeRef} /> : <></>}
-      {lyricsOpen && <Lyrics state={props.state} position={position} />}
+      {lyricsOpen && playbackState?.item && <Lyrics state={playbackState} position={position} />}
       <Footer className={lyricsOpen || visualizerOpen || location.hash.includes("queue") ? "footer-overlay" : ""}>
         <Navbar className="now-playing">
           <Col flex={1}>
             <Row>
               <Scrubber
                 min={0}
-                max={props.state.item?.RunTimeTicks! / 10000}
+                max={playbackState?.item?.RunTimeTicks! / 10000}
                 value={position}
                 tooltip={{
                   enabledOnHover: true,
@@ -517,16 +559,16 @@ export default function PlayBar(props: { state: PlaybackState }) {
                 }}
               >
                 <HStack spacing={10}>
-                  <Avatar size="sm" src={getAlbumArt(props.state.item!)}>
+                  <Avatar size="sm" src={getAlbumArt(playbackState?.item!)}>
                     <Icon icon="album" noSpace />
                   </Avatar>
                   <div>
                     <VStack spacing={0}>
                       <Text weight="bold" className="no-select">
-                        {props.state.item?.Name}
+                        {playbackState?.item?.Name}
                       </Text>
                       <Text muted className="no-select">
-                        {getArtistDisplay(props.state.item?.Artists)}
+                        {getArtistDisplay(playbackState?.item?.Artists)}
                       </Text>
                     </VStack>
                   </div>
@@ -540,14 +582,14 @@ export default function PlayBar(props: { state: PlaybackState }) {
                   <Button
                     appearance="subtle"
                     onClick={() => {
-                      if (playbackState!.playing) {
+                      if (playbackState?.playing) {
                         pause();
                       } else {
                         play();
                       }
                     }}
                   >
-                    <Icon icon={props.state.playing ? "pause" : "play_arrow"} noSpace />
+                    <Icon icon={playbackState?.playing ? "pause" : "play_arrow"} noSpace />
                   </Button>
                   <Button
                     appearance="subtle"
@@ -566,7 +608,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
               <Col flex={1} display={"flex"} justifyContent={"flex-end"} className="now-playing-buttons">
                 <HStack spacing={9}>
                   <Text muted className="no-select track-time">
-                    {formatTimestamp(position / 1000)} / {formatTimestamp(props.state.item?.RunTimeTicks! / 1e7)}
+                    {formatTimestamp(position / 1000)} / {formatTimestamp(playbackState?.item?.RunTimeTicks! / 1e7)}
                   </Text>
                   {visualizerSupported.current && (
                     <Button
@@ -583,7 +625,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
                       <Icon icon={"music_video"} noSpace />
                     </Button>
                   )}
-                  {(props.state.item?.HasLyrics || lyricsOpen) && (
+                  {(playbackState?.item?.HasLyrics || lyricsOpen) && (
                     <Button
                       className="square"
                       appearance="subtle"
@@ -637,7 +679,7 @@ export default function PlayBar(props: { state: PlaybackState }) {
                     />
                   </Button>
                   <ItemContextMenu
-                    item={props.state.item!}
+                    item={playbackState?.item!}
                     type="now-playing"
                     menuButton={
                       <Button appearance="subtle" className="square">

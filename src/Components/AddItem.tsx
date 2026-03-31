@@ -1,6 +1,6 @@
-import { Avatar, Button, Checkbox, CheckboxGroup, Form, HStack, List, Modal, Placeholder, Text, VStack } from "rsuite";
-import { getUser, GlobalState } from "../App";
-import { useContext, useEffect, useState } from "react";
+import { Avatar, Button, Checkbox, CheckboxGroup, Form, HStack, List, Modal, Placeholder, Text, VStack, useToaster } from "rsuite";
+import { getUser } from "../App";
+import { useEffect, useState } from "react";
 import { getLibrary } from "../Util/Network";
 import { getStorage } from "../storage";
 import { errorNotification, successNotification } from "../Util/Toaster";
@@ -8,11 +8,14 @@ import { pluralize } from "../Util/Formatting";
 import Icon from "./Icon";
 import { addItemToPlaylist, addToCollection, createCollection, createPlaylist, getItems } from "../Client";
 import type { BaseItemDto } from "../Client";
+import { useAppDispatch } from "../store/hooks";
+import { setAddItem } from "../store/slices/addItemSlice";
 
 const storage = getStorage();
 
 export default function AddItem({ item, type }: { item: BaseItemDto | null; type: string }) {
-  const { setAddItem, toaster } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const toaster = useToaster();
   const [items, setItems] = useState<BaseItemDto[] | null>(null);
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -51,7 +54,7 @@ export default function AddItem({ item, type }: { item: BaseItemDto | null; type
     <Modal
       open={!!item}
       onClose={() => {
-        setAddItem(null);
+        dispatch(setAddItem(null));
       }}
       onExited={() => {
         setCurrentPage(0);
@@ -86,7 +89,7 @@ export default function AddItem({ item, type }: { item: BaseItemDto | null; type
                       <List.Item
                         key={parentItem.Id}
                         onClick={async () => {
-                          setAddItem(null);
+                          dispatch(setAddItem(null));
                           try {
                             if (type === "playlist") {
                               await addItemToPlaylist({
@@ -168,7 +171,7 @@ export default function AddItem({ item, type }: { item: BaseItemDto | null; type
                   }
                 });
                 const response = newPlaylistRequest.response;
-                setAddItem(null);
+                dispatch(setAddItem(null));
                 if (!response.ok) {
                   toaster.push(
                     errorNotification(
@@ -200,7 +203,7 @@ export default function AddItem({ item, type }: { item: BaseItemDto | null; type
                   }
                 });
 
-                setAddItem(null);
+                dispatch(setAddItem(null));
 
                 const response = newCollectionRequest.response;
                 const responseData = newCollectionRequest.data;

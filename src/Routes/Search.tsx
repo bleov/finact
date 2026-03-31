@@ -1,15 +1,17 @@
 import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box, List } from "rsuite";
 import Icon from "../Components/Icon";
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
-import { GlobalState } from "../App";
 import { playItem } from "../Util/Helpers";
 import Fallback from "../Components/Fallback";
 import { getItems } from "../Client";
 import type { BaseItemDto, BaseItemKind } from "../Client/index";
 import Spacer from "../Components/Spacer";
 import { ItemListEntry } from "../Components/ItemListEntry";
+import { useAppDispatch } from "../store/hooks";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
 
 const storage = getStorage();
 
@@ -62,8 +64,6 @@ export default function Search() {
   const [searchResults, setSearchResults] = useState<Categories[]>([]);
   const [searched, setSearched] = useState(false);
   const [searching, setSearching] = useState(false);
-
-  const { setPlaybackState, setQueue } = useContext(GlobalState);
 
   return (
     <>

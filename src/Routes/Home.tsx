@@ -1,12 +1,15 @@
 import { Heading, Button, Placeholder, Row, Grid, VStack, List } from "rsuite";
-import { getUser, GlobalState } from "../App";
-import { useContext, useState, useEffect } from "react";
+import { getUser } from "../App";
+import { useState, useEffect } from "react";
 import { getLibrary } from "../Util/Network";
 import ItemTile from "../Components/ItemTile";
 import { playItem } from "../Util/Helpers";
 import { getItems, getLatestMedia } from "../Client";
 import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Client/index";
 import { ItemListEntry } from "../Components/ItemListEntry";
+import { useAppDispatch } from "../store/hooks";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
 
 export default function Home() {
   return (
@@ -67,7 +70,6 @@ export function RecentlyAdded() {
 
 export function FrequentlyPlayed() {
   const [frequentlyPlayed, setFrequentlyPlayed] = useState<BaseItemDtoQueryResult | null>(null);
-  const { setQueue, setPlaybackState } = useContext(GlobalState);
 
   useEffect(() => {
     getLibrary("music").then((musicLibrary) => {
