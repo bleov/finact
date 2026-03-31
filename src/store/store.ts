@@ -5,7 +5,6 @@ import loadingReducer from "./slices/loadingSlice";
 import addItemReducer from "./slices/addItemSlice";
 import addItemTypeReducer from "./slices/addItemTypeSlice";
 import lastCommandReducer from "./slices/lastCommandSlice";
-import playlistContextReducer from "./slices/playlistContextSlice";
 
 export const store = configureStore({
   reducer: {
@@ -14,8 +13,7 @@ export const store = configureStore({
     loading: loadingReducer,
     addItem: addItemReducer,
     addItemType: addItemTypeReducer,
-    lastCommand: lastCommandReducer,
-    playlistContext: playlistContextReducer
+    lastCommand: lastCommandReducer
   }
 });
 

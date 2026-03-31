@@ -10,7 +10,6 @@ import { ItemListEntry } from "../Components/ItemListEntry";
 import { useAppDispatch } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
-import { setPlaylistContext } from "../store/slices/playlistContextSlice";
 
 export default function Home() {
   return (
@@ -71,7 +70,6 @@ export function RecentlyAdded() {
 
 export function FrequentlyPlayed() {
   const [frequentlyPlayed, setFrequentlyPlayed] = useState<BaseItemDtoQueryResult | null>(null);
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     getLibrary("music").then((musicLibrary) => {
@@ -92,12 +90,9 @@ export function FrequentlyPlayed() {
         }
       }).then((frequentlyPlayedItems) => {
         setFrequentlyPlayed(frequentlyPlayedItems.data!);
-        if (frequentlyPlayedItems.data?.Items) {
-          dispatch(setPlaylistContext({ items: frequentlyPlayedItems.data.Items, type: "standalone" }));
-        }
       });
     });
-  }, [dispatch]);
+  }, []);
 
   return (
     <>
@@ -109,7 +104,7 @@ export function FrequentlyPlayed() {
             <Heading level={4}>Frequently Played</Heading>
             <List bordered hover width={"100%"}>
               {frequentlyPlayed.Items.map((item, idx) => (
-                <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" />
+                <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={frequentlyPlayed.Items} />
               ))}
             </List>
           </VStack>

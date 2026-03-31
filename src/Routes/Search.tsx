@@ -1,6 +1,6 @@
 import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box, List } from "rsuite";
 import Icon from "../Components/Icon";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
 import { playItem } from "../Util/Helpers";
@@ -12,7 +12,6 @@ import { ItemListEntry } from "../Components/ItemListEntry";
 import { useAppDispatch } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
-import { setPlaylistContext } from "../store/slices/playlistContextSlice";
 
 const storage = getStorage();
 
@@ -65,14 +64,6 @@ export default function Search() {
   const [searchResults, setSearchResults] = useState<Categories[]>([]);
   const [searched, setSearched] = useState(false);
   const [searching, setSearching] = useState(false);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    const audioCategory = searchResults.find((cat) => cat.Type === "Audio");
-    if (audioCategory && audioCategory.Items.length > 0) {
-      dispatch(setPlaylistContext({ items: audioCategory.Items, type: "search" }));
-    }
-  }, [searchResults, dispatch]);
 
   return (
     <>
@@ -109,7 +100,7 @@ export default function Search() {
                   {category.Type == "Audio" ? (
                     <List bordered hover width={"100%"}>
                       {category.Items.map((item, idx) => (
-                        <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" />
+                        <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={category.Items} />
                       ))}
                     </List>
                   ) : (

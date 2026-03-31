@@ -11,7 +11,6 @@ import { getItem, getItems } from "../../Client";
 import type { BaseItemDto } from "../../Client";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { setLoading } from "../../store/slices/loadingSlice";
-import { setPlaylistContext } from "../../store/slices/playlistContextSlice";
 
 const storage = getStorage();
 
@@ -68,9 +67,7 @@ export default function Album() {
             }
           })
         ]);
-        const allItems = responses[1].data!.Items!;
-        setData({ data: responses[0].data!, discs: getDiscGroups(allItems) });
-        dispatch(setPlaylistContext({ items: allItems, type: "album" }));
+        setData({ data: responses[0].data!, discs: getDiscGroups(responses[1].data!.Items!) });
       } catch (err) {
         console.error(err);
         if (err.toString().includes("400")) {
@@ -153,7 +150,7 @@ export default function Album() {
                 <Spacer height={5} />
                 <List bordered hover>
                   {discItems.map((item, index) => (
-                    <ItemListEntry item={item} index={index} type="album" parentId={id} key={item.Id} />
+                    <ItemListEntry item={item} index={index} type="album" allItems={data.discs.flat()} parentId={id} key={item.Id} />
                   ))}
                 </List>
                 <Spacer height={5} />
