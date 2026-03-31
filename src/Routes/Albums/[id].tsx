@@ -96,7 +96,7 @@ export default function Album() {
         <>
           <HStack spacing={14} wrap>
             <Image height={128} rounded bordered src={`${storage.get("serverURL")}/Items/${id}/Images/Primary`} />
-            <HStack.Item style={{ flexGrow: "1" }}>
+            <HStack.Item flexGrow={1}>
               <Heading level={3} marginLeft={10}>
                 {data.data.Name}
               </Heading>
