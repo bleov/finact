@@ -192,6 +192,10 @@ i.material-icons.no-space {
   }
 }
 
+.rs-modal-body {
+  padding-block-end: 0 !important;
+}
+
 @media (max-width: 626px) {
   .stop-btn {
     display: none;

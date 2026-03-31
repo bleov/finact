@@ -231,40 +231,45 @@ export default function AddItem({ item, type }: { item: BaseItemDto | null; type
             }}
             fluid
           >
-            <Modal.Body>
-              <Form.ControlLabel>Name</Form.ControlLabel>
-              <Form.Control defaultValue={""} name="name" required></Form.Control>
-              {type == "playlist" ? (
-                <>
-                  <Form.Control accepter={CheckboxGroup} name="public">
-                    <Checkbox value={1}>Allow Public Access</Checkbox>
-                  </Form.Control>
-                  <Form.HelpText>Make this playlist visible to all logged in users</Form.HelpText>
-                </>
-              ) : (
-                <>
-                  <Form.Control accepter={CheckboxGroup} name="locked">
-                    <Checkbox value={1}>Lock Collection Metadata</Checkbox>
-                  </Form.Control>
-                  <Form.HelpText>Don't search the internet for metadata and images</Form.HelpText>
-                </>
-              )}
+            <Modal.Body width={"100%"}>
+              <VStack spacing={10}>
+                <Form.Group>
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control defaultValue={""} name="name" required></Form.Control>
+                </Form.Group>
+                <Form.Group>
+                  {type == "playlist" ? (
+                    <>
+                      <Form.Control accepter={CheckboxGroup} name="public">
+                        <Checkbox value={1}>Allow Public Access</Checkbox>
+                      </Form.Control>
+                      <Form.Text>Make this playlist visible to all logged in users</Form.Text>
+                    </>
+                  ) : (
+                    <>
+                      <Form.Control accepter={CheckboxGroup} name="locked">
+                        <Checkbox value={1}>Lock Collection Metadata</Checkbox>
+                      </Form.Control>
+                      <Form.Text>Don't search the internet for metadata and images</Form.Text>
+                    </>
+                  )}
+                </Form.Group>
+              </VStack>
             </Modal.Body>
-            <Modal.Footer>
-              <FlexboxGrid>
-                <FlexboxGrid.Item
+            <Modal.Footer width={"100%"}>
+              <HStack width={"100%"} justify={"space-between"}>
+                <Button
+                  type="reset"
                   onClick={() => {
                     setCurrentPage(0);
                   }}
                 >
-                  <Button type="reset">Back</Button>
-                </FlexboxGrid.Item>
-                <FlexboxGrid.Item style={{ flexGrow: 1, justifySelf: "flex-end" }}>
-                  <Button appearance="primary" type="submit">
-                    Create
-                  </Button>
-                </FlexboxGrid.Item>
-              </FlexboxGrid>
+                  Back
+                </Button>
+                <Button appearance="primary" type="submit">
+                  Create
+                </Button>
+              </HStack>
             </Modal.Footer>
           </Form>
         </>
