@@ -184,12 +184,17 @@ i.material-icons.no-space {
 
 .rs-navbar-brand {
   cursor: default;
+  color: unset !important;
   & .rs-image {
     cursor: pointer;
   }
   &:hover {
     color: unset !important;
   }
+}
+
+.rs-modal-body {
+  padding-block-end: 0 !important;
 }
 
 @media (max-width: 626px) {

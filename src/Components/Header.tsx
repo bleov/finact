@@ -12,7 +12,7 @@ import { reportSessionEnded, UserDto } from "../Client";
 const storage = getStorage();
 const cacheStorage = getCacheStorage();
 
-export default function MainHeader(props: { user: UserDto }) {
+export default function MainHeader(props: { user: UserDto | null }) {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [logoEasterEgg, setLogoEasterEgg] = useState(false);
 
@@ -49,12 +49,12 @@ export default function MainHeader(props: { user: UserDto }) {
       <Drawer open={sideNavOpen} onClose={() => setSideNavOpen(false)} placement="left" size={"65vw"}>
         <Drawer.Header>
           <Drawer.Title>
-            <Image src="finact.png" style={{ height: "1em", marginRight: "5px" }} />
+            <Image src="finact.png" height={"1em"} marginRight={5} />
             {Math.random() < 0.001 ? "Fincat" : "Finact"}
           </Drawer.Title>
         </Drawer.Header>
 
-        <Drawer.Body style={{ paddingInline: 0, paddingTop: 5 }}>
+        <Drawer.Body paddingTop={5} paddingLeft={0} paddingRight={0}>
           <Sidenav appearance="subtle">
             <Sidenav.Body>
               <Nav>
@@ -70,7 +70,7 @@ export default function MainHeader(props: { user: UserDto }) {
             <HStack>
               <Image
                 src="finact.png"
-                style={{ height: "1.5em" }}
+                height={"1.5em"}
                 className={logoEasterEgg ? "spin" : ""}
                 onClick={(e) => {
                   if (logoEasterEgg) return;
@@ -133,6 +133,7 @@ export default function MainHeader(props: { user: UserDto }) {
                     Sign out
                   </MenuItem>
                   {isElectron && (
+                    // @ts-ignore
                     <MenuItem onClick={() => window.electron!.sendMessage(JSON.stringify({ type: "quit" }))}>
                       <Icon icon="close" />
                       Quit

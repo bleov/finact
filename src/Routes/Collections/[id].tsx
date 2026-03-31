@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { Heading, Grid, Row } from "rsuite";
-import { getUser, GlobalState } from "../../App";
+import { Heading, Grid, Row, VStack } from "rsuite";
+import { GlobalState } from "../../App";
 import ItemTile from "../../Components/ItemTile";
 import { getItems } from "../../Client";
 import type { BaseItemDtoQueryResult } from "../../Client/index";
@@ -33,9 +33,9 @@ export default function Collection() {
   return (
     <>
       {items && items.Items ? (
-        <>
+        <VStack spacing={10}>
           <Heading level={3}>Albums</Heading>
-          <Grid fluid>
+          <Grid fluid width={"100%"}>
             <Row gutter={16}>
               {items.Items.map((item, index) => (
                 <ItemTile
@@ -50,7 +50,7 @@ export default function Collection() {
               ))}
             </Row>
           </Grid>
-        </>
+        </VStack>
       ) : (
         ""
       )}

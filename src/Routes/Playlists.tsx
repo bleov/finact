@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Grid, Heading, Row } from "rsuite";
+import { Grid, Heading, Row, VStack } from "rsuite";
 import { getLibrary } from "../Util/Network";
 import { getUser, GlobalState } from "../App";
 import ItemTile from "../Components/ItemTile";
@@ -14,7 +14,7 @@ export default function Playlists() {
   const [errorIcon, setErrorIcon] = useState("apps_outage");
 
   useEffect(() => {
-    function handleError(err) {
+    function handleError(err: Error) {
       console.error(err);
 
       setLoading(false);
@@ -54,9 +54,9 @@ export default function Playlists() {
   return (
     <>
       {playlists && playlists.Items ? (
-        <>
+        <VStack spacing={10}>
           <Heading level={3}>Playlists</Heading>
-          <Grid fluid>
+          <Grid fluid width={"100%"}>
             <Row gutter={16}>
               {playlists.Items.map((item, index) => (
                 <ItemTile
@@ -67,7 +67,7 @@ export default function Playlists() {
               ))}
             </Row>
           </Grid>
-        </>
+        </VStack>
       ) : (
         error && <Fallback icon={errorIcon} text={error} />
       )}

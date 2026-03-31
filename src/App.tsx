@@ -148,7 +148,7 @@ function App() {
             <Notification closable type="info" header="Success">
               <Text>{`The ${restoredState ? "current track" : ""}${restoredState && restoredQueue ? " and " : ""}${restoredQueue ? "queue" : ""} ${restoredState && restoredQueue ? " were " : "was"} restored successfully.`}</Text>
               <Button
-                style={{ marginTop: 8 }}
+                marginTop={8}
                 onClick={() => {
                   setPlaybackState(null);
                   setQueue(null);
@@ -167,6 +167,7 @@ function App() {
     })();
 
     if (isElectron) {
+      // @ts-ignore
       window.electron!.onCommand(async (command) => {
         const data = JSON.parse(command);
         setLastCommand({ ...data, timestamp: Date.now() });
@@ -175,6 +176,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // @ts-ignore
     window.debug = { ...globalState, storage, cacheStorage };
   }, [...Object.values(globalState)]);
 
@@ -190,7 +192,7 @@ function App() {
   return (
     <>
       <GlobalState.Provider value={globalState}>
-        <Container style={{ height: "100%" }}>
+        <Container height={"100%"}>
           <MainHeader user={user} />
           <Content>
             {!user ? (

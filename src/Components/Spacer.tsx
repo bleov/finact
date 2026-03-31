@@ -1,3 +1,5 @@
+import { Box } from "rsuite";
+
 export default function Spacer({ height = 0, width = 0 }: { height?: number; width?: number }) {
-  return <div className="spacer" style={{ height, width }} />;
+  return <Box className="spacer" height={height} width={width} />;
 }

@@ -56,7 +56,7 @@ export default function ItemTile(props: { item: BaseItemDto; tileProps?: React.H
       <Col
         key={props.item.Id}
         {...getColSize()}
-        style={{ marginBottom: 5 }}
+        marginBottom={5}
         {...props.tileProps}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -75,7 +75,9 @@ export default function ItemTile(props: { item: BaseItemDto; tileProps?: React.H
               />
             )}
             <Image
-              style={{ visibility: "hidden", position: "absolute", backgroundColor: "var(--rs-body)" }}
+              visibility={"hidden"}
+              position={"absolute"}
+              backgroundColor={"var(--rs-body)"}
               onLoad={(e) => {
                 (e.target as HTMLElement).style.visibility = "visible";
               }}
@@ -86,7 +88,9 @@ export default function ItemTile(props: { item: BaseItemDto; tileProps?: React.H
             />
           </div>
         </div>
-        <Text style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>{props.item.Name}</Text>
+        <Text whiteSpace={"nowrap"} overflow={"hidden"} textOverflow={"ellipsis"} align="center">
+          {props.item.Name}
+        </Text>
       </Col>
     </>
   );

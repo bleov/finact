@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-import { Grid, Heading, Row } from "rsuite";
+import { Grid, Heading, Row, VStack } from "rsuite";
 import { getLibrary } from "../Util/Network";
-import { getUser, GlobalState } from "../App";
+import { GlobalState } from "../App";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
 import Fallback from "../Components/Fallback";
@@ -54,9 +54,9 @@ export default function Collections() {
   return (
     <>
       {collections && collections.Items ? (
-        <>
+        <VStack spacing={10}>
           <Heading level={3}>Collections</Heading>
-          <Grid fluid>
+          <Grid fluid width={"100%"}>
             <Row gutter={16}>
               {collections.Items.map((item, index) => (
                 <ItemTile
@@ -67,7 +67,7 @@ export default function Collections() {
               ))}
             </Row>
           </Grid>
-        </>
+        </VStack>
       ) : (
         error && <Fallback text={error} icon={errorIcon} />
       )}

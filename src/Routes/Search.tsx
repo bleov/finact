@@ -1,6 +1,6 @@
-import { Heading, Input, InputGroup, Text, Form, Grid, Row, FlexboxGrid } from "rsuite";
+import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box, List } from "rsuite";
 import Icon from "../Components/Icon";
-import { useState, Fragment, useContext } from "react";
+import { useState, useContext } from "react";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
 import { GlobalState } from "../App";
@@ -8,6 +8,8 @@ import { playItem } from "../Util/Helpers";
 import Fallback from "../Components/Fallback";
 import { getItems } from "../Client";
 import type { BaseItemDto, BaseItemKind } from "../Client/index";
+import Spacer from "../Components/Spacer";
+import { ItemListEntry } from "../Components/ItemListEntry";
 
 const storage = getStorage();
 
@@ -65,11 +67,9 @@ export default function Search() {
 
   return (
     <>
-      <FlexboxGrid style={{ flexDirection: "column", minHeight: "100%" }}>
-        <FlexboxGrid.Item>
-          <Heading level={3}>Search</Heading>
-        </FlexboxGrid.Item>
-        <FlexboxGrid.Item style={{ width: "100%" }}>
+      <VStack spacing={10}>
+        <Heading level={3}>Search</Heading>
+        <Box width={"100%"}>
           <Form
             onSubmit={async () => {
               if (searching) return;
@@ -86,21 +86,24 @@ export default function Search() {
               </InputGroup.Button>
             </InputGroup>
           </Form>
-        </FlexboxGrid.Item>
-        <FlexboxGrid.Item
-          style={{ width: "100%", flexGrow: 1, display: searched && searchResults.length == 0 ? "flex" : "unset", alignItems: "center" }}
-        >
-          {searchResults.length > 0 ? (
-            <>
-              {searchResults.map((category, index) => {
-                if (!("Items" in category) || category.Items.length == 0) {
-                  return null;
-                }
-                return (
-                  <Fragment key={index}>
-                    <Heading level={4} style={{ marginBlock: 10 }}>
-                      {itemTypeDisplayNames[category.Type] || "Unknown"}
-                    </Heading>
+        </Box>
+        {searchResults.length > 0 ? (
+          <>
+            {searchResults.map((category, index) => {
+              if (!("Items" in category) || category.Items.length == 0) {
+                return null;
+              }
+              return (
+                <Box key={index} width={"100%"}>
+                  <Heading level={4}>{itemTypeDisplayNames[category.Type as keyof typeof itemTypeDisplayNames] || "Unknown"}</Heading>
+                  <Spacer height={10} />
+                  {category.Type == "Audio" ? (
+                    <List bordered hover width={"100%"}>
+                      {category.Items.map((item, idx) => (
+                        <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={category.Items} />
+                      ))}
+                    </List>
+                  ) : (
                     <Grid fluid>
                       <Row gutter={16}>
                         {category.Items.map((item) => {
@@ -128,15 +131,15 @@ export default function Search() {
                         })}
                       </Row>
                     </Grid>
-                  </Fragment>
-                );
-              })}
-            </>
-          ) : (
-            searched && <Fallback icon="search_off" text="No results found" />
-          )}
-        </FlexboxGrid.Item>
-      </FlexboxGrid>
+                  )}
+                </Box>
+              );
+            })}
+          </>
+        ) : (
+          searched && <Fallback icon="search_off" text="No results found" />
+        )}
+      </VStack>
     </>
   );
 }
