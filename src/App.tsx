@@ -25,11 +25,12 @@ import { getStorage, getCacheStorage } from "./storage";
 import { store } from "./store/store";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { setPlaybackState } from "./store/slices/playbackSlice";
-import { setQueue } from "./store/slices/queueSlice";
+import { Queue, setQueue } from "./store/slices/queueSlice";
 import { setLoading } from "./store/slices/loadingSlice";
 import { setAddItem } from "./store/slices/addItemSlice";
 import { setAddItemType } from "./store/slices/addItemTypeSlice";
 import { setLastCommand } from "./store/slices/lastCommandSlice";
+import { upsertTrackItem, upsertTrackItems } from "./Util/ItemCache";
 
 const storage = getStorage();
 const cacheStorage = getCacheStorage();
@@ -73,6 +74,47 @@ function AppContent() {
 
   const toaster = useToaster();
 
+  function normalizeQueue(savedQueue: unknown): Queue | null {
+    if (!savedQueue || typeof savedQueue !== "object") {
+      return null;
+    }
+
+    const value = savedQueue as {
+      itemIds?: unknown;
+      items?: Array<BaseItemDto | null | undefined>;
+      index?: unknown;
+    };
+
+    const parsedIndex = typeof value.index === "number" ? value.index : 0;
+
+    if (Array.isArray(value.itemIds)) {
+      const itemIds = value.itemIds.filter((id): id is string => typeof id === "string" && id.length > 0);
+      if (itemIds.length === 0) {
+        return null;
+      }
+
+      return {
+        itemIds,
+        index: Math.min(Math.max(parsedIndex, 0), itemIds.length - 1)
+      };
+    }
+
+    if (Array.isArray(value.items)) {
+      void upsertTrackItems(value.items);
+      const itemIds = value.items.map((item) => item?.Id).filter((id): id is string => Boolean(id));
+      if (itemIds.length === 0) {
+        return null;
+      }
+
+      return {
+        itemIds,
+        index: Math.min(Math.max(parsedIndex, 0), itemIds.length - 1)
+      };
+    }
+
+    return null;
+  }
+
   useEffect(() => {
     (async () => {
       if (user) {
@@ -89,13 +131,17 @@ function AppContent() {
             savedState.position = savedPosition / 1000;
           }
           dispatch(setPlaybackState(savedState));
+          void upsertTrackItem(savedState.item);
           console.log("Restoring playback state");
           restoredState = true;
         }
         if (savedQueue) {
-          dispatch(setQueue(savedQueue));
-          console.log("Restoring queue");
-          restoredQueue = true;
+          const normalizedQueue = normalizeQueue(savedQueue);
+          if (normalizedQueue) {
+            dispatch(setQueue(normalizedQueue));
+            console.log("Restoring queue");
+            restoredQueue = true;
+          }
         }
         queueAndStateInitialized.current = true;
         if (restoredState || restoredQueue) {

@@ -94,9 +94,9 @@ function ItemListEntryComponent({
               onClick={(e) => {
                 e.stopPropagation();
                 if (queue) {
-                  const newItems = [...queue.items];
-                  newItems.splice(index, 1);
-                  dispatch(setQueue({ ...queue, items: newItems }));
+                  const newItemIds = [...queue.itemIds];
+                  newItemIds.splice(index, 1);
+                  dispatch(setQueue({ ...queue, itemIds: newItemIds }));
                 }
               }}
             >

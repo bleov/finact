@@ -15,6 +15,7 @@ import { setAddItemType } from "../store/slices/addItemTypeSlice";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
 import { useToaster } from "rsuite";
+import { upsertTrackItem } from "../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -96,18 +97,24 @@ export default function ItemContextMenu({
         icon: "playlist_add",
         label: "Add to queue",
         action: () => {
-          if (queue && queue.items) {
+          if (!item.Id) {
+            toaster.push(infoNotification("Error", "Item cannot be queued"));
+            return;
+          }
+
+          if (queue && queue.itemIds) {
             // Check if the item is already in the queue
-            const isInQueue = queue.items.some((queueItem) => queueItem.Id === item.Id);
+            const isInQueue = queue.itemIds.includes(item.Id);
             if (isInQueue) {
               toaster.push(infoNotification("Error", "Item is already in the queue"));
               return;
             }
           }
-          if (!queue || !queue.items) {
-            dispatch(setQueue({ items: [item], index: 0 }));
+          void upsertTrackItem(item);
+          if (!queue || !queue.itemIds) {
+            dispatch(setQueue({ itemIds: [item.Id], index: 0 }));
           } else {
-            const newQueue = { ...queue, items: [...queue.items, item] };
+            const newQueue = { ...queue, itemIds: [...queue.itemIds, item.Id] };
             dispatch(setQueue(newQueue));
           }
         }
@@ -116,19 +123,25 @@ export default function ItemContextMenu({
         icon: "playlist_add",
         label: "Play next",
         action: () => {
-          if (queue && queue.items) {
+          if (!item.Id) {
+            toaster.push(infoNotification("Error", "Item cannot be queued"));
+            return;
+          }
+
+          if (queue && queue.itemIds) {
             // Check if the item is already in the queue
-            const isInQueue = queue.items.some((queueItem) => queueItem.Id === item.Id);
+            const isInQueue = queue.itemIds.includes(item.Id);
             if (isInQueue) {
               toaster.push(infoNotification("Error", "Item is already in the queue"));
               return;
             }
           }
-          if (!queue || !queue.items) {
-            dispatch(setQueue({ items: [item], index: 0 }));
+          void upsertTrackItem(item);
+          if (!queue || !queue.itemIds) {
+            dispatch(setQueue({ itemIds: [item.Id], index: 0 }));
           } else {
-            const newQueue = { ...queue, items: [...queue.items] };
-            newQueue.items.splice(newQueue.index + 1, 0, item);
+            const newQueue = { ...queue, itemIds: [...queue.itemIds] };
+            newQueue.itemIds.splice(newQueue.index + 1, 0, item.Id);
             dispatch(setQueue(newQueue));
           }
         }

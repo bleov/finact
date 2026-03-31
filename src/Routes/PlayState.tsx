@@ -8,6 +8,8 @@ import { getAlbumArt } from "../Util/Formatting";
 import localforage from "localforage";
 import { Blurhash, BlurhashCanvas } from "react-blurhash";
 import { setQueue } from "../store/slices/queueSlice";
+import { BaseItemDto } from "../Client";
+import { getCachedTrackItems } from "../Util/ItemCache";
 
 const cacheStorage = getCacheStorage();
 const storage = getStorage();
@@ -17,6 +19,41 @@ function Queue() {
   const queue = useAppSelector((state) => state.queue);
   const playbackState = useAppSelector((state) => state.playback);
   const [sortable, setSortable] = useState(false);
+  const [queueItems, setQueueItems] = useState<Array<BaseItemDto | null>>([]);
+
+  useEffect(() => {
+    let canceled = false;
+
+    (async () => {
+      if (!queue?.itemIds || queue.itemIds.length === 0) {
+        if (!canceled) {
+          setQueueItems([]);
+        }
+        return;
+      }
+
+      const cachedItems = await getCachedTrackItems(queue.itemIds);
+      const hydratedItems = cachedItems.map((item, index) => {
+        if (item) {
+          return item;
+        }
+
+        if (playbackState?.item?.Id === queue.itemIds[index]) {
+          return playbackState.item ?? null;
+        }
+
+        return null;
+      });
+
+      if (!canceled) {
+        setQueueItems(hydratedItems);
+      }
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, [queue?.itemIds, playbackState?.item]);
 
   const handleSortEnd = ({
     oldIndex,
@@ -29,21 +66,26 @@ function Queue() {
     node: HTMLElement;
   }) => {
     if (queue) {
-      const moveData = queue.items.splice(oldIndex, 1);
-      const newData = [...queue.items];
-      newData.splice(newIndex, 0, moveData[0]);
-      dispatch(setQueue({ ...queue, items: newData }));
+      const newItemIds = [...queue.itemIds];
+      const moveData = newItemIds.splice(oldIndex, 1);
+      newItemIds.splice(newIndex, 0, moveData[0]);
+      dispatch(setQueue({ ...queue, itemIds: newItemIds }));
     }
   };
 
   return (
     <Stack.Item flex={1} className="queue" height={"100%"} overflow={"auto"}>
-      {!queue || !("items" in queue) || queue.items.length == 0 ? (
+      {!queue || queue.itemIds.length == 0 ? (
         <Fallback icon="queue_music" text="Queue is empty" />
       ) : (
         <>
           <List bordered sortable={sortable} onSort={handleSortEnd}>
-            {queue.items.map((item, index) => {
+            {queue.itemIds.map((itemId, index) => {
+              const item = queueItems[index];
+              if (!item) {
+                return null;
+              }
+
               return (
                 <ItemListEntry
                   props={{
@@ -54,8 +96,8 @@ function Queue() {
                   item={item}
                   type="queue"
                   index={index}
-                  key={item.Id}
-                  allItems={queue.items}
+                  key={`${itemId}-${index}`}
+                  allItems={queueItems.filter((queuedItem): queuedItem is BaseItemDto => Boolean(queuedItem))}
                   setSortable={setSortable}
                 />
               );

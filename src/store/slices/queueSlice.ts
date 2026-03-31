@@ -1,14 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BaseItemDto } from "../../Client";
 
 export interface Queue {
-  items: BaseItemDto[];
+  itemIds: string[];
   index: number;
 }
 
 const initialState: Queue | null = null;
 
-export const queueSlice = createSlice({
+export const queueSlice = createSlice<Queue | null>({
   name: "queue",
   initialState,
   reducers: {

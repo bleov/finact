@@ -1,5 +1,6 @@
 import { BaseItemDto } from "../Client";
 import type { Queue } from "../store/slices/queueSlice";
+import { upsertTrackItem, upsertTrackItems } from "./ItemCache";
 
 export function playItem(
   setPlaybackState: (state: any) => void,
@@ -7,17 +8,25 @@ export function playItem(
   item: BaseItemDto,
   allItems?: BaseItemDto[]
 ) {
+  void upsertTrackItem(item);
+  if (allItems && allItems.length > 0) {
+    void upsertTrackItems(allItems);
+  }
+
   let queue: Queue;
 
   if (!allItems) {
     queue = {
-      items: [item],
+      itemIds: item.Id ? [item.Id] : [],
       index: 0
     };
   } else {
+    const itemIds = allItems.map((x) => x.Id).filter((id): id is string => Boolean(id));
+    const index = item.Id ? itemIds.findIndex((id) => id === item.Id) : -1;
+
     queue = {
-      items: allItems,
-      index: allItems.findIndex((x) => x.Id == item.Id)
+      itemIds,
+      index: index >= 0 ? index : 0
     };
   }
   setPlaybackState({

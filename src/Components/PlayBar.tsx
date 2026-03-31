@@ -17,6 +17,7 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
 import type { PlaybackState } from "../store/slices/playbackSlice";
+import { getCachedTrackItem, upsertTrackItem } from "../Util/ItemCache";
 
 interface ExtendedAudioElement extends HTMLAudioElement {
   sourceNode?: MediaElementAudioSourceNode;
@@ -91,6 +92,8 @@ export default function PlayBar() {
   }, [volume]);
 
   useEffect(() => {
+    void upsertTrackItem(playbackState?.item);
+
     if (audioRef.current) {
       if (playbackState?.item && playbackState.item.NormalizationGain && gainNodeRef.current) {
         gainNodeRef.current.gain.value = Math.pow(10, playbackState.item.NormalizationGain / 20);
@@ -400,13 +403,36 @@ export default function PlayBar() {
       }).catch(() => {});
   }
 
-  function next() {
+  async function getQueueItem(queueIndex: number) {
+    if (!queue || queueIndex < 0 || queueIndex >= queue.itemIds.length) {
+      return null;
+    }
+
+    const itemId = queue.itemIds[queueIndex];
+    const cachedItem = await getCachedTrackItem(itemId);
+    if (cachedItem) {
+      return cachedItem;
+    }
+
+    if (playbackState?.item?.Id === itemId) {
+      return playbackState.item;
+    }
+
+    return null;
+  }
+
+  async function next() {
     if (!audioRef.current) return;
-    if (queue && queue.items && queue.items.length > 0) {
-      if (queue.index == queue.items.length - 1) {
+    if (queue && queue.itemIds && queue.itemIds.length > 0) {
+      if (queue.index == queue.itemIds.length - 1) {
         if (repeat === "all") {
           // loop back to the first song
-          const firstItem = queue.items[0];
+          const firstItem = await getQueueItem(0);
+          if (!firstItem) {
+            stop();
+            return;
+          }
+
           dispatch(
             setPlaybackState({
               item: firstItem,
@@ -416,7 +442,7 @@ export default function PlayBar() {
           );
           dispatch(
             setQueue({
-              items: queue.items,
+              itemIds: queue.itemIds,
               index: 0
             })
           );
@@ -426,7 +452,12 @@ export default function PlayBar() {
         stop();
         return;
       }
-      const nextItem = queue.items[queue.index + 1];
+      const nextItem = await getQueueItem(queue.index + 1);
+      if (!nextItem) {
+        stop();
+        return;
+      }
+
       dispatch(
         setPlaybackState({
           item: nextItem,
@@ -436,7 +467,7 @@ export default function PlayBar() {
       );
       dispatch(
         setQueue({
-          items: queue.items,
+          itemIds: queue.itemIds,
           index: queue.index + 1
         })
       );
@@ -445,7 +476,7 @@ export default function PlayBar() {
     }
   }
 
-  function previous() {
+  async function previous() {
     if (!audioRef.current) return;
     if (queue && audioRef.current.currentTime < 4) {
       if (queue.index == 0) {
@@ -457,7 +488,12 @@ export default function PlayBar() {
         );
         return;
       }
-      const prevItem = queue.items[queue.index - 1];
+      const prevItem = await getQueueItem(queue.index - 1);
+      if (!prevItem) {
+        stop();
+        return;
+      }
+
       dispatch(
         setPlaybackState({
           item: prevItem,
@@ -467,7 +503,7 @@ export default function PlayBar() {
       );
       dispatch(
         setQueue({
-          items: queue.items,
+          itemIds: queue.itemIds,
           index: queue.index - 1
         })
       );
