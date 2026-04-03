@@ -15,7 +15,7 @@ Finact is a modern [Jellyfin](https://jellyfin.org/) client written in React mad
 | Collections                 | ✅     | ✅              | ❌                                            |
 | Media Keys & OS Integration | ✅     | ➖ <sup>1</sup> | ➖ <sup>2</sup>                               |
 | Synced & Regular Lyrics     | ✅     | ✅              | ✅                                            |
-| Music Visualizer            | ✅     | ❌              | ❌                                            |
+| Music Visualizer            | ✅     | ❌              | ✅                                            |
 | Audio Normalization         | ✅     | ❌              | ✅                                            |
 
 1. Not supported on Linux, no album art
