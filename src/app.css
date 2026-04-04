@@ -212,6 +212,18 @@ i.material-icons.no-space {
   }
 }
 
+.item-list-entry {
+  --rs-box-h: 66px;
+  height: 66px;
+  overflow: hidden;
+}
+
+.item-list-image {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--rs-radius-sm);
+}
+
 @media (max-width: 626px) {
   .stop-btn {
     display: none;

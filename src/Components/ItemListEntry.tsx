@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { List, HStack, VStack, Text, Button, Avatar, Box } from "rsuite";
+import { List, HStack, VStack, Text, Button, Box, Image } from "rsuite";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { formatTimestamp, getAlbumArt } from "../Util/Formatting";
 import Icon from "./Icon";
@@ -38,7 +38,7 @@ function ItemListEntryComponent({
     <List.Item
       key={item.Id}
       index={index}
-      className="pointer"
+      className="pointer item-list-entry"
       onClick={async () => {
         playItem(
           (state) => dispatch(setPlaybackState(state)),
@@ -49,7 +49,7 @@ function ItemListEntryComponent({
       }}
       {...props}
     >
-      <HStack spacing={15} alignItems="center">
+      <HStack spacing={15} alignItems="center" style={{ width: "100%", minWidth: 0 }}>
         {/* {type == "queue" && (
           <div
             onMouseEnter={() => {
@@ -63,22 +63,25 @@ function ItemListEntryComponent({
           </div>
         )} */}
         {type == "album" && item.IndexNumber && <Text muted>{item.IndexNumber}</Text>}
-        {type != "album" && (
-          <Avatar src={getAlbumArt(item, 160)}>
-            <Icon icon="album" noSpace />
-          </Avatar>
-        )}
-        <VStack spacing={0}>
-          <Text>{item.Name}</Text>
+        {type != "album" && <Image src={getAlbumArt(item, 160)} className="item-list-image" />}
+        <VStack spacing={0} style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
+          <Text className="single-line" style={{ display: "block", width: "100%" }}>
+            {item.Name}
+          </Text>
           {type == "album"
-            ? item.Artists && item.Artists.length > 0 && <Text muted>{item.Artists.join(" / ")}</Text>
+            ? item.Artists &&
+              item.Artists.length > 0 && (
+                <Text className="single-line" muted style={{ display: "block", width: "100%" }}>
+                  {item.Artists.join(" / ")}
+                </Text>
+              )
             : item.Album && (
-                <Text as="a" href={`#albums/${item.AlbumId}`} muted onClick={(e) => e.stopPropagation()}>
+                <Text className="single-line" muted style={{ display: "block", width: "100%" }}>
                   {item.Album}
                 </Text>
               )}
         </VStack>
-        <Box alignSelf="flex-end" display={"flex"} justifyContent={"flex-end"} grow={1}>
+        <Box alignSelf="flex-end" display={"flex"} justifyContent={"flex-end"} style={{ marginLeft: "auto", flexShrink: 0 }}>
           {isFavorite && (
             <Icon icon="favorite" className="red-400 center-vert" style={{ marginRight: "10px", fontSize: "1.4em" }} noSpace />
           )}
