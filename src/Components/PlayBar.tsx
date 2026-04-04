@@ -16,7 +16,6 @@ import { getItem, getItems, reportPlaybackProgress, reportPlaybackStart, reportP
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
-import type { PlaybackState } from "../store/slices/playbackSlice";
 import { getCachedTrackItem, upsertTrackItem } from "../Util/ItemCache";
 
 interface ExtendedAudioElement extends HTMLAudioElement {

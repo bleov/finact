@@ -11,6 +11,7 @@ import { getItem, getItems } from "../../Client";
 import type { BaseItemDto } from "../../Client";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { setLoading } from "../../store/slices/loadingSlice";
+import { upsertTrackItems } from "../../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -67,6 +68,7 @@ export default function Album() {
             }
           })
         ]);
+        await upsertTrackItems(responses[1].data!.Items!);
         setData({ data: responses[0].data!, discs: getDiscGroups(responses[1].data!.Items!) });
       } catch (err) {
         console.error(err);
@@ -154,7 +156,10 @@ export default function Album() {
                       item={item}
                       index={index}
                       type="album"
-                      allItems={data.discs.flat().map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
+                      allItems={data.discs
+                        .flat()
+                        .map((queueItem) => queueItem.Id)
+                        .filter((id): id is string => Boolean(id))}
                       parentId={id}
                       key={item.Id}
                     />

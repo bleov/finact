@@ -10,6 +10,7 @@ import { ItemListEntry } from "../Components/ItemListEntry";
 import { useAppDispatch } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
+import { upsertTrackItems } from "../Util/ItemCache";
 
 export default function Home() {
   return (
@@ -88,7 +89,8 @@ export function FrequentlyPlayed() {
           enableImageTypes: ["Primary", "Backdrop", "Banner", "Thumb"],
           enableTotalRecordCount: false
         }
-      }).then((frequentlyPlayedItems) => {
+      }).then(async (frequentlyPlayedItems) => {
+        await upsertTrackItems(frequentlyPlayedItems.data!.Items!);
         setFrequentlyPlayed(frequentlyPlayedItems.data!);
       });
     });

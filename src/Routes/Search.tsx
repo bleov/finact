@@ -12,6 +12,7 @@ import { ItemListEntry } from "../Components/ItemListEntry";
 import { useAppDispatch } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
+import { upsertTrackItem, upsertTrackItems } from "../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -74,7 +75,9 @@ export default function Search() {
             onSubmit={async () => {
               if (searching) return;
               setSearching(true);
-              setSearchResults(await searchInstance(searchQuery));
+              const results = await searchInstance(searchQuery);
+              await upsertTrackItems(results.flatMap((category) => category.Items).filter((item) => item.Type === "Audio"));
+              setSearchResults(results);
               setSearched(true);
               setSearching(false);
             }}

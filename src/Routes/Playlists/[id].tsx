@@ -11,6 +11,7 @@ import { getItem, getItems } from "../../Client/index";
 import type { BaseItemDtoQueryResult, BaseItemDto } from "../../Client/index";
 import { useAppDispatch } from "../../store/hooks";
 import { setLoading } from "../../store/slices/loadingSlice";
+import { upsertTrackItems } from "../../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -37,6 +38,7 @@ export default function Playlist() {
         }
       })
     ]);
+    await upsertTrackItems(responses[1].data!.Items!);
     setData({ data: responses[0].data!, items: responses[1].data! });
     dispatch(setLoading(false));
   };
