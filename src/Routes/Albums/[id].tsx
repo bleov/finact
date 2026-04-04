@@ -1,7 +1,6 @@
-import { useEffect, useState, useContext, Fragment } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useParams } from "react-router";
 import { Heading, List, HStack, Stat, Image, Box } from "rsuite";
-import { GlobalState } from "../../App";
 import { formatSeconds } from "../../Util/Formatting";
 import { getStorage } from "../../storage";
 import Spacer from "../../Components/Spacer";
@@ -10,6 +9,9 @@ import ItemListActions from "../../Components/ItemListActions";
 import Fallback from "../../Components/Fallback";
 import { getItem, getItems } from "../../Client";
 import type { BaseItemDto } from "../../Client";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { setLoading } from "../../store/slices/loadingSlice";
+import { upsertTrackItems } from "../../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -47,10 +49,11 @@ export default function Album() {
   } | null>(null);
   const [error, setError] = useState("");
   const [errorIcon, setErrorIcon] = useState("album");
-  const { loading, setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector((state) => state.loading);
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
     const fetchPlaylistData = async () => {
       try {
         const responses = await Promise.all([
@@ -65,6 +68,7 @@ export default function Album() {
             }
           })
         ]);
+        await upsertTrackItems(responses[1].data!.Items!);
         setData({ data: responses[0].data!, discs: getDiscGroups(responses[1].data!.Items!) });
       } catch (err) {
         console.error(err);
@@ -83,7 +87,7 @@ export default function Album() {
         }
         setData(null);
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     };
 
@@ -148,7 +152,17 @@ export default function Album() {
                 <Spacer height={5} />
                 <List bordered hover>
                   {discItems.map((item, index) => (
-                    <ItemListEntry item={item} index={index} type="album" allItems={data.discs.flat()} parentId={id} key={item.Id} />
+                    <ItemListEntry
+                      item={item}
+                      index={index}
+                      type="album"
+                      allItems={data.discs
+                        .flat()
+                        .map((queueItem) => queueItem.Id)
+                        .filter((id): id is string => Boolean(id))}
+                      parentId={id}
+                      key={item.Id}
+                    />
                   ))}
                 </List>
                 <Spacer height={5} />

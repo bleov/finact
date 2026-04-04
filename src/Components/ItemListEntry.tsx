@@ -1,74 +1,73 @@
-import { useContext, useState } from "react";
-import { List, HStack, VStack, Text, Button, Avatar, Box } from "rsuite";
-import { GlobalState } from "../App";
+import { memo, useState } from "react";
+import { List, HStack, VStack, Text, Button, Box, Image } from "rsuite";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { formatTimestamp, getAlbumArt } from "../Util/Formatting";
 import Icon from "./Icon";
 import ItemContextMenu from "./ItemContextMenu";
 import { playItem } from "../Util/Helpers";
 import type { BaseItemDto } from "../Client";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
 
-export function ItemListEntry({
+function ItemListEntryComponent({
   item,
   index,
   type,
   allItems,
-  setSortable,
   parentId,
   refresh,
-  props
+  props,
+  active
 }: {
   item: BaseItemDto;
   index: number;
   type: "queue" | "album" | "playlist" | "standalone";
-  allItems?: BaseItemDto[];
-  setSortable?: React.Dispatch<React.SetStateAction<boolean>>;
+  allItems?: string[];
   parentId?: string;
   refresh?: () => void;
   props?: React.HTMLAttributes<HTMLElement>;
+  active?: boolean;
 }) {
-  const { setQueue, setPlaybackState } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const queue = useAppSelector((state) => state.queue);
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
 
   return (
     <List.Item
       key={item.Id}
       index={index}
-      className="pointer"
+      className={`pointer item-list-entry${active ? " item-list-entry-active" : ""}`}
       onClick={async () => {
-        playItem(setPlaybackState, setQueue, item, allItems);
+        playItem(
+          (state) => dispatch(setPlaybackState(state)),
+          (state) => dispatch(setQueue(state)),
+          item,
+          allItems
+        );
       }}
       {...props}
     >
-      <HStack spacing={15} alignItems="center">
-        {type == "queue" && (
-          <div
-            onMouseEnter={() => {
-              setSortable?.(true);
-            }}
-            onMouseLeave={() => {
-              setSortable?.(false);
-            }}
-          >
-            <Icon icon="drag_handle" style={{ color: "var(--rs-text-secondary)" }} noSpace />
-          </div>
-        )}
+      <HStack spacing={15} alignItems="center" style={{ width: "100%", minWidth: 0 }}>
         {type == "album" && item.IndexNumber && <Text muted>{item.IndexNumber}</Text>}
-        {type != "album" && (
-          <Avatar src={getAlbumArt(item, 160)}>
-            <Icon icon="album" noSpace />
-          </Avatar>
-        )}
-        <VStack spacing={0}>
-          <Text>{item.Name}</Text>
+        {type != "album" && <Image src={getAlbumArt(item, 80)} className="item-list-image" />}
+        <VStack spacing={0} style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
+          <Text className="single-line" style={{ display: "block", width: "100%" }}>
+            {item.Name}
+          </Text>
           {type == "album"
-            ? item.Artists && item.Artists.length > 0 && <Text muted>{item.Artists.join(" / ")}</Text>
+            ? item.Artists &&
+              item.Artists.length > 0 && (
+                <Text className="single-line" muted style={{ display: "block", width: "100%" }}>
+                  {item.Artists.join(" / ")}
+                </Text>
+              )
             : item.Album && (
-                <Text as="a" href={`#albums/${item.AlbumId}`} muted onClick={(e) => e.stopPropagation()}>
+                <Text className="single-line" muted style={{ display: "block", width: "100%" }}>
                   {item.Album}
                 </Text>
               )}
         </VStack>
-        <Box alignSelf="flex-end" display={"flex"} justifyContent={"flex-end"} grow={1}>
+        <Box alignSelf="flex-end" display={"flex"} justifyContent={"flex-end"} style={{ marginLeft: "auto", flexShrink: 0 }}>
           {isFavorite && (
             <Icon icon="favorite" className="red-400 center-vert" style={{ marginRight: "10px", fontSize: "1.4em" }} noSpace />
           )}
@@ -83,11 +82,11 @@ export function ItemListEntry({
               className="square"
               onClick={(e) => {
                 e.stopPropagation();
-                setQueue((prevState) => {
-                  const newItems = [...prevState!.items];
-                  newItems.splice(index, 1);
-                  return { ...prevState!, items: newItems };
-                });
+                if (queue) {
+                  const newItemIds = [...queue.itemIds];
+                  newItemIds.splice(index, 1);
+                  dispatch(setQueue({ ...queue, itemIds: newItemIds }));
+                }
               }}
             >
               <Icon icon="remove_circle_outline" noSpace />
@@ -115,3 +114,5 @@ export function ItemListEntry({
     </List.Item>
   );
 }
+
+export const ItemListEntry = memo(ItemListEntryComponent);

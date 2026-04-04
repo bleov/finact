@@ -19,7 +19,7 @@ if (process.platform === "linux") {
 let win;
 let playbackState = {
   state: { playing: false },
-  queue: []
+  queue: null
 };
 let connectedSockets = [];
 let playbackPortUsed = false;
@@ -155,12 +155,7 @@ server.get("/basicQueue", (_, res) => {
   res.json({
     queue: {
       index: playbackState.queue?.index,
-      items: playbackState.queue.items?.map((item) => {
-        return {
-          Id: item.Id,
-          Name: item.Name
-        };
-      })
+      itemIds: playbackState.queue?.itemIds ?? []
     }
   });
 });

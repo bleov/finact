@@ -1,19 +1,20 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text } from "rsuite";
-import { GlobalState, PlaybackState } from "../App";
-import Icon from "./Icon";
-import { getCacheStorage } from "../storage";
-import { getLyrics } from "../Client";
 import type { LyricDto, LyricLine } from "../Client";
+import { getLyrics } from "../Client";
+import { getCacheStorage } from "../storage";
+import { useAppDispatch } from "../store/hooks";
+import { setLoading } from "../store/slices/loadingSlice";
+import { setPlaybackState, type PlaybackState } from "../store/slices/playbackSlice";
+import Icon from "./Icon";
 
 const cacheStorage = getCacheStorage();
 
 export default function Lyrics(props: { state: PlaybackState; position: number }) {
+  const dispatch = useAppDispatch();
   const state = props.state;
   const lastLine = useRef(-1);
   const [lyrics, setLyrics] = useState<LyricDto | null>(null);
-
-  const { setPlaybackState, setLoading } = useContext(GlobalState);
 
   let isSynced = true;
 
@@ -21,14 +22,14 @@ export default function Lyrics(props: { state: PlaybackState; position: number }
     let newLyrics: LyricDto | null | undefined = null;
     if (state.item && state.item.HasLyrics) {
       if (!cacheStorage.get(`lyrics-${state.item.Id}`)) {
-        setLoading(true);
+        dispatch(setLoading(true));
 
         const lyricsResponse = await getLyrics({
           path: { itemId: state.item.Id! }
         });
         newLyrics = lyricsResponse.data;
         cacheStorage.set(`lyrics-${state.item.Id}`, newLyrics);
-        setLoading(false);
+        dispatch(setLoading(false));
       } else {
         newLyrics = cacheStorage.get(`lyrics-${state.item.Id}`);
       }
@@ -88,12 +89,15 @@ export default function Lyrics(props: { state: PlaybackState; position: number }
                   if (!isSynced) {
                     return;
                   }
-                  setPlaybackState((prevState) => {
-                    return {
-                      ...prevState,
-                      position: line.Start! / 1e7
-                    };
-                  });
+                  if (line.Start == null) {
+                    return;
+                  }
+                  dispatch(
+                    setPlaybackState({
+                      ...state,
+                      position: line.Start / 1e7
+                    })
+                  );
                 }}
                 muted={isSynced ? !isCurrent : false}
                 key={index + (line.Start || "").toString()}

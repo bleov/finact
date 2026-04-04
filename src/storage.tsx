@@ -1,9 +1,9 @@
 import EasyStorage from "@pikapower9080/easy-storage";
 import localforage from "localforage";
 
-export const asyncStorage = localforage.createInstance({
-  name: "finact-async",
-  storeName: "finact-async",
+export const itemCache = localforage.createInstance({
+  name: "finact-item-cache",
+  storeName: "finact-item-cache",
   driver: localforage.INDEXEDDB,
   version: 1.0,
   description: "Finact async storage"

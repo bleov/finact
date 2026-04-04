@@ -1,13 +1,21 @@
 import { ControlledMenu, Menu, MenuDivider, MenuItem } from "@szhsin/react-menu";
 import Icon from "./Icon";
 import { getStorage } from "../storage";
-import { getUser, GlobalState } from "../App";
-import { JSX, useContext, useState } from "react";
+import { getUser } from "../App";
+import { JSX, useState } from "react";
 import copy from "copy-to-clipboard";
 import { downloadBlob, playItem } from "../Util/Helpers";
 import { errorNotification, infoNotification, successNotification } from "../Util/Toaster";
 import { getDownload, getItemImage, markFavoriteItem, removeItemFromPlaylist, unmarkFavoriteItem } from "../Client";
 import type { BaseItemDto } from "../Client";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { setLoading } from "../store/slices/loadingSlice";
+import { setAddItem } from "../store/slices/addItemSlice";
+import { setAddItemType } from "../store/slices/addItemTypeSlice";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
+import { useToaster } from "rsuite";
+import { upsertTrackItem } from "../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -62,7 +70,9 @@ export default function ItemContextMenu({
   setParentIsFavorite?: (isFav: boolean) => void;
   onClose?: () => void;
 }) {
-  const { setLoading, setAddItem, setAddItemType, setPlaybackState, queue, setQueue, toaster } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
+  const queue = useAppSelector((state) => state.queue);
+  const toaster = useToaster();
   const user = getUser();
 
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
@@ -76,48 +86,64 @@ export default function ItemContextMenu({
         icon: "play_arrow",
         label: "Play",
         action: () => {
-          playItem(setPlaybackState, setQueue, item);
+          playItem(
+            (state) => dispatch(setPlaybackState(state)),
+            (state) => dispatch(setQueue(state)),
+            item
+          );
         }
       });
       playbackCategory.push({
         icon: "playlist_add",
         label: "Add to queue",
         action: () => {
-          if (queue && queue.items) {
+          if (!item.Id) {
+            toaster.push(infoNotification("Error", "Item cannot be queued"));
+            return;
+          }
+
+          if (queue && queue.itemIds) {
             // Check if the item is already in the queue
-            const isInQueue = queue.items.some((queueItem) => queueItem.Id === item.Id);
+            const isInQueue = queue.itemIds.includes(item.Id);
             if (isInQueue) {
               toaster.push(infoNotification("Error", "Item is already in the queue"));
               return;
             }
           }
-          setQueue((prevQueue) => {
-            if (!prevQueue || !prevQueue.items) {
-              return { items: [item], index: 0 };
-            }
-            const newQueue = prevQueue ? { ...prevQueue, items: [...prevQueue.items, item] } : { items: [item], index: 0 };
-            return newQueue;
-          });
+          void upsertTrackItem(item);
+          if (!queue || !queue.itemIds) {
+            dispatch(setQueue({ itemIds: [item.Id], index: 0 }));
+          } else {
+            const newQueue = { ...queue, itemIds: [...queue.itemIds, item.Id] };
+            dispatch(setQueue(newQueue));
+          }
         }
       });
       playbackCategory.push({
         icon: "playlist_add",
         label: "Play next",
         action: () => {
-          if (queue && queue.items) {
+          if (!item.Id) {
+            toaster.push(infoNotification("Error", "Item cannot be queued"));
+            return;
+          }
+
+          if (queue && queue.itemIds) {
             // Check if the item is already in the queue
-            const isInQueue = queue.items.some((queueItem) => queueItem.Id === item.Id);
+            const isInQueue = queue.itemIds.includes(item.Id);
             if (isInQueue) {
               toaster.push(infoNotification("Error", "Item is already in the queue"));
               return;
             }
           }
-          setQueue((prevQueue) => {
-            // Insert the item at the next position in the queue
-            const newQueue = prevQueue ? { ...prevQueue, items: [...prevQueue.items] } : { items: [], index: 0 };
-            newQueue.items.splice(newQueue.index + 1, 0, item);
-            return newQueue;
-          });
+          void upsertTrackItem(item);
+          if (!queue || !queue.itemIds) {
+            dispatch(setQueue({ itemIds: [item.Id], index: 0 }));
+          } else {
+            const newQueue = { ...queue, itemIds: [...queue.itemIds] };
+            newQueue.itemIds.splice(newQueue.index + 1, 0, item.Id);
+            dispatch(setQueue(newQueue));
+          }
         }
       });
       menuCategories.push(playbackCategory);
@@ -139,8 +165,8 @@ export default function ItemContextMenu({
       icon: "playlist_add",
       label: "Add to Playlist",
       action: () => {
-        setAddItemType("playlist");
-        setAddItem(item);
+        dispatch(setAddItemType("playlist"));
+        dispatch(setAddItem(item));
       }
     });
     if (item.UserData && "IsFavorite" in item.UserData) {
@@ -171,7 +197,7 @@ export default function ItemContextMenu({
         icon: "download",
         label: "Download",
         action: async () => {
-          setLoading(true);
+          dispatch(setLoading(true));
           try {
             const blob = await getDownload({
               path: { itemId: item.Id! }
@@ -186,7 +212,7 @@ export default function ItemContextMenu({
             a.remove();
             window.URL.revokeObjectURL(url);
           } finally {
-            setLoading(false);
+            dispatch(setLoading(false));
           }
         }
       });
@@ -215,8 +241,8 @@ export default function ItemContextMenu({
       icon: "playlist_add",
       label: "Add to Playlist",
       action: () => {
-        setAddItemType("playlist");
-        setAddItem(item);
+        dispatch(setAddItemType("playlist"));
+        dispatch(setAddItem(item));
       }
     });
     if (item.Type === "MusicAlbum") {
@@ -224,8 +250,8 @@ export default function ItemContextMenu({
         icon: "add_to_photos",
         label: "Add to Collection",
         action: () => {
-          setAddItemType("collection");
-          setAddItem(item);
+          dispatch(setAddItemType("collection"));
+          dispatch(setAddItem(item));
         }
       });
     }
@@ -239,7 +265,7 @@ export default function ItemContextMenu({
         icon: "download",
         label: "Save Album Art",
         action: async () => {
-          setLoading(true);
+          dispatch(setLoading(true));
 
           try {
             const imageResponse = await getItemImage({
@@ -263,7 +289,7 @@ export default function ItemContextMenu({
             toaster.push(errorNotification("Error", "Failed to save album art"));
           }
 
-          setLoading(false);
+          dispatch(setLoading(false));
         }
       }
     ]);
@@ -275,7 +301,7 @@ export default function ItemContextMenu({
         icon: "download",
         label: "Save Playlist Cover",
         action: async () => {
-          setLoading(true);
+          dispatch(setLoading(true));
 
           try {
             const imageResponse = await getItemImage({
@@ -299,7 +325,7 @@ export default function ItemContextMenu({
             toaster.push(errorNotification("Error", "Failed to save playlist cover"));
           }
 
-          setLoading(false);
+          dispatch(setLoading(false));
         }
       }
     ]);
@@ -311,14 +337,14 @@ export default function ItemContextMenu({
       icon: "playlist_remove",
       label: "Remove from Playlist",
       action: () => {
-        setLoading(true);
+        dispatch(setLoading(true));
 
         removeItemFromPlaylist({
           path: { playlistId: context.parentId! },
           query: { entryIds: [item.Id!] },
           method: "DELETE"
         }).then((playlistResponse) => {
-          setLoading(false);
+          dispatch(setLoading(false));
           if (!playlistResponse.response.ok) {
             if (playlistResponse.response.status === 403) {
               toaster.push(errorNotification("Failed to remove item", "You don't have permission to remove items from this playlist"));

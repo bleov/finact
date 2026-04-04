@@ -1,14 +1,16 @@
 import { Button, ButtonGroup } from "rsuite";
 import Icon from "./Icon";
-import { useContext, useState } from "react";
-import { GlobalState } from "../App";
+import { useState } from "react";
 import ItemContextMenu from "./ItemContextMenu";
 import { playItem } from "../Util/Helpers";
 import { markFavoriteItem, unmarkFavoriteItem } from "../Client";
 import type { BaseItemDto } from "../Client";
+import { useAppDispatch } from "../store/hooks";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
 
 export default function ItemListActions({ parent, items }: { parent: BaseItemDto; items: BaseItemDto[] }) {
-  const { setPlaybackState, setQueue } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
   const [isFavorite, setIsFavorite] = useState(parent.UserData?.IsFavorite);
   const [loadingIsFavorite, setLoadingIsFavorite] = useState(false);
 
@@ -18,7 +20,12 @@ export default function ItemListActions({ parent, items }: { parent: BaseItemDto
         className="square subtle-bordered"
         appearance="subtle"
         onClick={() => {
-          playItem(setPlaybackState, setQueue, items[0], items);
+          playItem(
+            (state) => dispatch(setPlaybackState(state)),
+            (state) => dispatch(setQueue(state)),
+            items[0],
+            items
+          );
         }}
       >
         <Icon icon="play_arrow" noSpace />
@@ -28,7 +35,12 @@ export default function ItemListActions({ parent, items }: { parent: BaseItemDto
         appearance="subtle"
         onClick={() => {
           const shuffledItems = [...items].sort(() => Math.random() - 0.5);
-          playItem(setPlaybackState, setQueue, shuffledItems[0], shuffledItems);
+          playItem(
+            (state) => dispatch(setPlaybackState(state)),
+            (state) => dispatch(setQueue(state)),
+            shuffledItems[0],
+            shuffledItems
+          );
         }}
       >
         <Icon icon="shuffle" noSpace />

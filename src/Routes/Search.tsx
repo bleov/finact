@@ -1,15 +1,18 @@
 import { Heading, Input, InputGroup, Form, Grid, Row, VStack, Box, List } from "rsuite";
 import Icon from "../Components/Icon";
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
-import { GlobalState } from "../App";
 import { playItem } from "../Util/Helpers";
 import Fallback from "../Components/Fallback";
 import { getItems } from "../Client";
 import type { BaseItemDto, BaseItemKind } from "../Client/index";
 import Spacer from "../Components/Spacer";
 import { ItemListEntry } from "../Components/ItemListEntry";
+import { useAppDispatch } from "../store/hooks";
+import { setPlaybackState } from "../store/slices/playbackSlice";
+import { setQueue } from "../store/slices/queueSlice";
+import { upsertTrackItem, upsertTrackItems } from "../Util/ItemCache";
 
 const storage = getStorage();
 
@@ -63,8 +66,6 @@ export default function Search() {
   const [searched, setSearched] = useState(false);
   const [searching, setSearching] = useState(false);
 
-  const { setPlaybackState, setQueue } = useContext(GlobalState);
-
   return (
     <>
       <VStack spacing={10}>
@@ -74,7 +75,9 @@ export default function Search() {
             onSubmit={async () => {
               if (searching) return;
               setSearching(true);
-              setSearchResults(await searchInstance(searchQuery));
+              const results = await searchInstance(searchQuery);
+              await upsertTrackItems(results.flatMap((category) => category.Items).filter((item) => item.Type === "Audio"));
+              setSearchResults(results);
               setSearched(true);
               setSearching(false);
             }}
@@ -100,7 +103,13 @@ export default function Search() {
                   {category.Type == "Audio" ? (
                     <List bordered hover width={"100%"}>
                       {category.Items.map((item, idx) => (
-                        <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={category.Items} />
+                        <ItemListEntry
+                          key={item.Id}
+                          item={item}
+                          index={idx}
+                          type="standalone"
+                          allItems={category.Items.map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
+                        />
                       ))}
                     </List>
                   ) : (

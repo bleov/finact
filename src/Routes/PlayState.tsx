@@ -1,19 +1,76 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { Center, Image, List, Stack, Text, VStack } from "rsuite";
-import { GlobalState } from "../App";
+import { useEffect, useRef, useState } from "react";
+import { Center, Image, List, Placeholder, Stack, Text, VStack } from "rsuite";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { getCacheStorage, getStorage } from "../storage";
 import { ItemListEntry } from "../Components/ItemListEntry";
 import Fallback from "../Components/Fallback";
 import { getAlbumArt } from "../Util/Formatting";
-import localforage from "localforage";
-import { Blurhash, BlurhashCanvas } from "react-blurhash";
+import { BlurhashCanvas } from "react-blurhash";
+import { setQueue } from "../store/slices/queueSlice";
+import { BaseItemDto } from "../Client";
+import { getCachedTrackItems } from "../Util/ItemCache";
+import { List as WindowedList } from "react-window";
 
-const cacheStorage = getCacheStorage();
 const storage = getStorage();
 
 function Queue() {
-  const { queue, setQueue, playbackState } = useContext(GlobalState);
-  const [sortable, setSortable] = useState(false);
+  const dispatch = useAppDispatch();
+  const queue = useAppSelector((state) => state.queue);
+  const playbackState = useAppSelector((state) => state.playback);
+  const [queueItems, setQueueItems] = useState<Array<BaseItemDto | null>>([]);
+  const queueViewportRef = useRef<HTMLDivElement>(null);
+  const [queueViewportHeight, setQueueViewportHeight] = useState(0);
+
+  useEffect(() => {
+    const element = queueViewportRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      setQueueViewportHeight(Math.floor(entry.contentRect.height));
+    });
+
+    resizeObserver.observe(element);
+    setQueueViewportHeight(Math.floor(element.getBoundingClientRect().height));
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let canceled = false;
+
+    (async () => {
+      if (!queue?.itemIds || queue.itemIds.length === 0) {
+        if (!canceled) {
+          setQueueItems([]);
+        }
+        return;
+      }
+
+      const cachedItems = await getCachedTrackItems(queue.itemIds);
+      const hydratedItems = cachedItems.map((item, index) => {
+        if (item) {
+          return item;
+        }
+
+        if (playbackState?.item?.Id === queue.itemIds[index]) {
+          return playbackState.item ?? null;
+        }
+
+        return null;
+      });
+
+      if (!canceled) {
+        setQueueItems(hydratedItems);
+      }
+    })();
+
+    return () => {
+      canceled = true;
+    };
+  }, [queue?.itemIds, playbackState?.item]);
 
   const handleSortEnd = ({
     oldIndex,
@@ -24,58 +81,65 @@ function Queue() {
     newIndex: number;
     collection: number | string;
     node: HTMLElement;
-  }) =>
-    setQueue(() => {
-      const moveData = queue!.items.splice(oldIndex, 1);
-      const newData = [...queue!.items];
-      newData.splice(newIndex, 0, moveData[0]);
-      return { ...queue!, items: newData };
-    });
+  }) => {
+    if (queue) {
+      const newItemIds = [...queue.itemIds];
+      const moveData = newItemIds.splice(oldIndex, 1);
+      newItemIds.splice(newIndex, 0, moveData[0]);
+      dispatch(setQueue({ ...queue, itemIds: newItemIds }));
+    }
+  };
 
   return (
-    <Stack.Item flex={1} className="queue" height={"100%"} overflow={"auto"}>
-      {!queue || !("items" in queue) || queue.items.length == 0 ? (
+    <Stack.Item flex={1} className="queue" height={"100%"} overflow={"hidden"}>
+      {!queue || queue.itemIds.length == 0 ? (
         <Fallback icon="queue_music" text="Queue is empty" />
       ) : (
-        <>
-          <List bordered sortable={sortable} onSort={handleSortEnd}>
-            {queue.items.map((item, index) => {
-              return (
-                <ItemListEntry
-                  props={{
-                    style: {
-                      backgroundColor: playbackState?.item?.Id == item.Id ? "rgba(40, 40, 40, 0.4)" : undefined
-                    }
-                  }}
-                  item={item}
-                  type="queue"
-                  index={index}
-                  key={item.Id}
-                  allItems={queue.items}
-                  setSortable={setSortable}
-                />
-              );
-            })}
+        <div ref={queueViewportRef} style={{ height: "100%" }}>
+          <List bordered onSort={handleSortEnd} style={{ height: "100%", overflow: "hidden" }}>
+            <WindowedList
+              defaultHeight={500}
+              style={{ height: queueViewportHeight || 1 }}
+              overscanCount={6}
+              rowComponent={({ index, style, ...rowProps }: any) => {
+                const item = queueItems[index];
+                if (!item) {
+                  return (
+                    <List.Item index={index} className="item-list-entry" style={style}>
+                      <Placeholder.Paragraph />
+                    </List.Item>
+                  );
+                }
+                let active = item.Id === playbackState?.item?.Id;
+
+                return (
+                  <ItemListEntry
+                    item={item}
+                    index={index}
+                    type="queue"
+                    allItems={queue.itemIds}
+                    props={{ style }}
+                    active={active}
+                    {...rowProps}
+                  />
+                );
+              }}
+              rowCount={queue.itemIds.length}
+              rowHeight={66}
+              rowProps={{
+                type: "queue",
+                allItems: queue.itemIds
+              }}
+            />
           </List>
-        </>
+        </div>
       )}
     </Stack.Item>
   );
 }
 
 export default function PlayState() {
-  const { playbackState } = useContext(GlobalState);
-  const [position, setPosition] = useState(0);
-
-  useEffect(() => {
-    let interval = setInterval(() => {
-      localforage.getItem<number>("position").then((pos) => {
-        setPosition(pos ?? 0);
-      });
-    }, 500);
-
-    return () => clearInterval(interval);
-  });
+  const playbackState = useAppSelector((state) => state.playback);
 
   return (
     <Stack

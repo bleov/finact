@@ -1,23 +1,24 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Grid, Heading, Row, VStack } from "rsuite";
 import { getLibrary } from "../Util/Network";
-import { GlobalState } from "../App";
 import { getStorage } from "../storage";
 import ItemTile from "../Components/ItemTile";
 import Fallback from "../Components/Fallback";
 import { getItems } from "../Client";
 import type { BaseItemDtoQueryResult } from "../Client/index";
+import { useAppDispatch } from "../store/hooks";
+import { setLoading } from "../store/slices/loadingSlice";
 
 const storage = getStorage();
 
 export default function Collections() {
   const [collections, setCollections] = useState<BaseItemDtoQueryResult | null>(null);
-  const { loading, setLoading } = useContext(GlobalState);
+  const dispatch = useAppDispatch();
   const [error, setError] = useState("");
   const [errorIcon, setErrorIcon] = useState("apps_outage");
 
   useEffect(() => {
-    setLoading(true);
+    dispatch(setLoading(true));
 
     getLibrary("boxsets")
       .then((collectionsLibrary) => {
@@ -33,12 +34,12 @@ export default function Collections() {
           }
         }).then((collectionsResponse) => {
           setCollections(collectionsResponse.data!);
-          setLoading(false);
+          dispatch(setLoading(false));
         });
       })
       .catch((err) => {
         console.error(err);
-        setLoading(false);
+        dispatch(setLoading(false));
         if (err.toString().includes("not found")) {
           setError("No collections yet");
           setErrorIcon("search_off");

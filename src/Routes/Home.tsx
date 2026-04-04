@@ -1,12 +1,12 @@
-import { Heading, Button, Placeholder, Row, Grid, VStack, List } from "rsuite";
-import { getUser, GlobalState } from "../App";
-import { useContext, useState, useEffect } from "react";
-import { getLibrary } from "../Util/Network";
-import ItemTile from "../Components/ItemTile";
-import { playItem } from "../Util/Helpers";
+import { useEffect, useState } from "react";
+import { Grid, Heading, List, Placeholder, Row, VStack } from "rsuite";
+import { getUser } from "../App";
 import { getItems, getLatestMedia } from "../Client";
-import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Client/index";
+import type { BaseItemDto, BaseItemDtoQueryResult } from "../Client/index";
 import { ItemListEntry } from "../Components/ItemListEntry";
+import ItemTile from "../Components/ItemTile";
+import { upsertTrackItems } from "../Util/ItemCache";
+import { getLibrary } from "../Util/Network";
 
 export default function Home() {
   return (
@@ -67,7 +67,6 @@ export function RecentlyAdded() {
 
 export function FrequentlyPlayed() {
   const [frequentlyPlayed, setFrequentlyPlayed] = useState<BaseItemDtoQueryResult | null>(null);
-  const { setQueue, setPlaybackState } = useContext(GlobalState);
 
   useEffect(() => {
     getLibrary("music").then((musicLibrary) => {
@@ -86,7 +85,8 @@ export function FrequentlyPlayed() {
           enableImageTypes: ["Primary", "Backdrop", "Banner", "Thumb"],
           enableTotalRecordCount: false
         }
-      }).then((frequentlyPlayedItems) => {
+      }).then(async (frequentlyPlayedItems) => {
+        await upsertTrackItems(frequentlyPlayedItems.data!.Items!);
         setFrequentlyPlayed(frequentlyPlayedItems.data!);
       });
     });
@@ -101,8 +101,14 @@ export function FrequentlyPlayed() {
           <VStack spacing={10} width={"100%"}>
             <Heading level={4}>Frequently Played</Heading>
             <List bordered hover width={"100%"}>
-              {frequentlyPlayed.Items.map((item, idx) => (
-                <ItemListEntry key={item.Id} item={item} index={idx} type="standalone" allItems={frequentlyPlayed.Items} />
+              {frequentlyPlayed.Items!.map((item, idx) => (
+                <ItemListEntry
+                  key={item.Id}
+                  item={item}
+                  index={idx}
+                  type="standalone"
+                  allItems={frequentlyPlayed.Items!.map((queueItem) => queueItem.Id).filter((id): id is string => Boolean(id))}
+                />
               ))}
             </List>
           </VStack>
