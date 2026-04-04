@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Text } from "rsuite";
-import Icon from "./Icon";
-import { getCacheStorage } from "../storage";
-import { getLyrics } from "../Client";
 import type { LyricDto, LyricLine } from "../Client";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { getLyrics } from "../Client";
+import { getCacheStorage } from "../storage";
+import { useAppDispatch } from "../store/hooks";
 import { setLoading } from "../store/slices/loadingSlice";
-import type { PlaybackState } from "../store/slices/playbackSlice";
+import { setPlaybackState, type PlaybackState } from "../store/slices/playbackSlice";
+import Icon from "./Icon";
 
 const cacheStorage = getCacheStorage();
 
@@ -89,12 +89,15 @@ export default function Lyrics(props: { state: PlaybackState; position: number }
                   if (!isSynced) {
                     return;
                   }
-                  setPlaybackState((prevState) => {
-                    return {
-                      ...prevState,
-                      position: line.Start! / 1e7
-                    };
-                  });
+                  if (line.Start == null) {
+                    return;
+                  }
+                  dispatch(
+                    setPlaybackState({
+                      ...state,
+                      position: line.Start / 1e7
+                    })
+                  );
                 }}
                 muted={isSynced ? !isCurrent : false}
                 key={index + (line.Start || "").toString()}
