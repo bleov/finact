@@ -49,7 +49,7 @@ function ItemListEntryComponent({
     >
       <HStack spacing={15} alignItems="center" style={{ width: "100%", minWidth: 0 }}>
         {type == "album" && item.IndexNumber && <Text muted>{item.IndexNumber}</Text>}
-        {type != "album" && <Image src={getAlbumArt(item, 160)} className="item-list-image" />}
+        {type != "album" && <Image src={getAlbumArt(item, 80)} className="item-list-image" />}
         <VStack spacing={0} style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
           <Text className="single-line" style={{ display: "block", width: "100%" }}>
             {item.Name}
