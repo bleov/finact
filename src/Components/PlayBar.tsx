@@ -1,6 +1,6 @@
-import { Avatar, Button, ButtonGroup, HStack, VStack, Navbar, Text, Footer, Whisper, Popover, Slider, Row, Col } from "rsuite";
+import { Avatar, Button, ButtonGroup, HStack, VStack, Navbar, Text, Footer, Whisper, Popover, Slider, Row, Col, Image } from "rsuite";
 import { getStorage } from "../storage";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getUser } from "../App";
 import { formatTimestamp, getAlbumArt, getPWADisplayMode } from "../Util/Formatting";
 import Icon from "./Icon";
@@ -17,10 +17,13 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setPlaybackState } from "../store/slices/playbackSlice";
 import { setQueue } from "../store/slices/queueSlice";
 import { getCachedTrackItem, upsertTrackItem } from "../Util/ItemCache";
+import { FastAverageColor } from "fast-average-color";
 
 interface ExtendedAudioElement extends HTMLAudioElement {
   sourceNode?: MediaElementAudioSourceNode;
 }
+
+const fac = new FastAverageColor();
 
 export default function PlayBar() {
   const audioRef = useRef<ExtendedAudioElement | null>(null);
@@ -33,10 +36,10 @@ export default function PlayBar() {
   const [position, setPosition] = useState(0);
   const [volume, setVolume] = useState(75);
   const [repeat, setRepeat] = useState("none");
+  const [accentColor, setAccentColor] = useState("var(--rs-blue-500)");
   const isScrubbing = useRef(false);
   const restoredVolume = useRef(false);
   const isPlayingRef = useRef(false);
-
   let visualizerSupported = useRef(false);
 
   if (visualizerSupported.current == false && isButterchurnSupported()) {
@@ -580,6 +583,9 @@ export default function PlayBar() {
                   isScrubbing.current = true;
                 }}
                 onScrubChange={setPosition}
+                style={{
+                  "--scrubber-color": accentColor ?? "var(--rs-blue-500)"
+                }}
               />
             </Row>
             <Row justify="space-around" align="middle">
@@ -593,9 +599,20 @@ export default function PlayBar() {
                 }}
               >
                 <HStack spacing={10}>
-                  <Avatar size="sm" src={getAlbumArt(playbackState?.item!)}>
-                    <Icon icon="album" noSpace />
-                  </Avatar>
+                  <Image
+                    crossOrigin="anonymous"
+                    className="now-playing-image"
+                    src={getAlbumArt(playbackState?.item!, 128)}
+                    onLoad={(e) => {
+                      setAccentColor(
+                        fac.getColor(e.currentTarget, {
+                          mode: "precision",
+                          algorithm: "sqrt",
+                          ignoredColor: [0, 0, 0, 255, 100]
+                        }).rgb
+                      );
+                    }}
+                  />
                   <div>
                     <VStack spacing={0}>
                       <Text weight="bold" className="no-select">

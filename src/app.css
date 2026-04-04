@@ -108,8 +108,9 @@ i.material-icons.no-space {
   border-radius: 6px;
 }
 
-.scrubber .bar__progress {
-  background-color: var(--rs-blue-500);
+.scrubber .bar__progress,
+.scrubber .bar__thumb {
+  background-color: var(--scrubber-color);
 }
 
 .scrubber {
@@ -224,6 +225,12 @@ i.material-icons.no-space {
 .item-list-image {
   width: 40px;
   height: 40px;
+  border-radius: var(--rs-radius-sm);
+}
+
+.now-playing-image {
+  width: 30px;
+  height: 30px;
   border-radius: var(--rs-radius-sm);
 }
 
