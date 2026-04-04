@@ -180,7 +180,6 @@ function AppContent() {
     if (!queueAndStateInitialized.current) {
       return;
     }
-    console.log(playbackState);
     storage.set("playbackState", playbackState);
     storage.set("queue", queue);
   }, [playbackState, queue]);

@@ -10,7 +10,6 @@ export async function upsertTrackItem(item: BaseItemDto | null | undefined) {
     return;
   }
 
-  console.log(`Caching track item: ${item.Name} (${item.Id})`);
   await itemCache.setItem(getTrackCacheKey(item.Id), item);
 }
 
