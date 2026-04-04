@@ -207,7 +207,7 @@ export default function PlayBar() {
             ItemId: playbackState?.item?.Id,
             IsPaused: !playbackState?.playing,
             IsMuted: false,
-            PositionTicks: Math.floor(position * 10000),
+            PositionTicks: Math.floor(e * 10000),
             VolumeLevel: volume
           }
         });
@@ -576,7 +576,6 @@ export default function PlayBar() {
                   isScrubbing.current = false;
                 }}
                 onScrubStart={(e) => {
-                  // handleTimeUpdate(e);
                   setPosition(e);
                   isScrubbing.current = true;
                 }}
