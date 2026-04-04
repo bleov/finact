@@ -217,6 +217,9 @@ i.material-icons.no-space {
   height: 66px;
   overflow: hidden;
 }
+.item-list-entry-active {
+  background-color: rgba(40, 40, 40, 0.4) !important;
+}
 
 .item-list-image {
   width: 40px;

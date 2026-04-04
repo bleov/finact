@@ -14,31 +14,29 @@ function ItemListEntryComponent({
   index,
   type,
   allItems,
-  setSortable,
   parentId,
   refresh,
-  props
+  props,
+  active
 }: {
   item: BaseItemDto;
   index: number;
   type: "queue" | "album" | "playlist" | "standalone";
   allItems?: string[];
-  setSortable?: React.Dispatch<React.SetStateAction<boolean>>;
   parentId?: string;
   refresh?: () => void;
   props?: React.HTMLAttributes<HTMLElement>;
+  active?: boolean;
 }) {
   const dispatch = useAppDispatch();
   const queue = useAppSelector((state) => state.queue);
   const [isFavorite, setIsFavorite] = useState(item.UserData?.IsFavorite || false);
 
-  console.log("rendering item list entry");
-
   return (
     <List.Item
       key={item.Id}
       index={index}
-      className="pointer item-list-entry"
+      className={`pointer item-list-entry${active ? " item-list-entry-active" : ""}`}
       onClick={async () => {
         playItem(
           (state) => dispatch(setPlaybackState(state)),
@@ -50,18 +48,6 @@ function ItemListEntryComponent({
       {...props}
     >
       <HStack spacing={15} alignItems="center" style={{ width: "100%", minWidth: 0 }}>
-        {/* {type == "queue" && (
-          <div
-            onMouseEnter={() => {
-              setSortable?.(true);
-            }}
-            onMouseLeave={() => {
-              setSortable?.(false);
-            }}
-          >
-            <Icon icon="drag_handle" style={{ color: "var(--rs-text-secondary)" }} noSpace />
-          </div>
-        )} */}
         {type == "album" && item.IndexNumber && <Text muted>{item.IndexNumber}</Text>}
         {type != "album" && <Image src={getAlbumArt(item, 160)} className="item-list-image" />}
         <VStack spacing={0} style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>

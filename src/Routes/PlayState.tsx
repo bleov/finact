@@ -19,7 +19,6 @@ function Queue() {
   const dispatch = useAppDispatch();
   const queue = useAppSelector((state) => state.queue);
   const playbackState = useAppSelector((state) => state.playback);
-  const [sortable, setSortable] = useState(false);
   const [queueItems, setQueueItems] = useState<Array<BaseItemDto | null>>([]);
   const queueViewportRef = useRef<HTMLDivElement>(null);
   const [queueViewportHeight, setQueueViewportHeight] = useState(0);
@@ -99,7 +98,7 @@ function Queue() {
         <Fallback icon="queue_music" text="Queue is empty" />
       ) : (
         <div ref={queueViewportRef} style={{ height: "100%" }}>
-          <List bordered sortable={sortable} onSort={handleSortEnd} style={{ height: "100%", overflow: "hidden" }}>
+          <List bordered onSort={handleSortEnd} style={{ height: "100%", overflow: "hidden" }}>
             <WindowedList
               defaultHeight={500}
               style={{ height: queueViewportHeight || 1 }}
@@ -113,6 +112,7 @@ function Queue() {
                     </List.Item>
                   );
                 }
+                let active = item.Id === playbackState?.item?.Id;
 
                 return (
                   <ItemListEntry
@@ -120,8 +120,8 @@ function Queue() {
                     index={index}
                     type="queue"
                     allItems={queue.itemIds}
-                    setSortable={setSortable}
                     props={{ style }}
+                    active={active}
                     {...rowProps}
                   />
                 );
@@ -130,8 +130,7 @@ function Queue() {
               rowHeight={66}
               rowProps={{
                 type: "queue",
-                allItems: queue.itemIds,
-                setSortable
+                allItems: queue.itemIds
               }}
             />
           </List>
