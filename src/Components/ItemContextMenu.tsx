@@ -2,7 +2,7 @@ import { ControlledMenu, Menu, MenuDivider, MenuItem } from "@szhsin/react-menu"
 import Icon from "./Icon";
 import { getStorage } from "../storage";
 import { getUser } from "../App";
-import { JSX, useState, useContext } from "react";
+import { JSX, useState } from "react";
 import copy from "copy-to-clipboard";
 import { downloadBlob, playItem } from "../Util/Helpers";
 import { errorNotification, infoNotification, successNotification } from "../Util/Toaster";

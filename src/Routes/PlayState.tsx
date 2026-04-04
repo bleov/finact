@@ -5,14 +5,12 @@ import { getCacheStorage, getStorage } from "../storage";
 import { ItemListEntry } from "../Components/ItemListEntry";
 import Fallback from "../Components/Fallback";
 import { getAlbumArt } from "../Util/Formatting";
-import localforage from "localforage";
 import { BlurhashCanvas } from "react-blurhash";
 import { setQueue } from "../store/slices/queueSlice";
 import { BaseItemDto } from "../Client";
 import { getCachedTrackItems } from "../Util/ItemCache";
 import { List as WindowedList } from "react-window";
 
-const cacheStorage = getCacheStorage();
 const storage = getStorage();
 
 function Queue() {

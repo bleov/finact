@@ -1,16 +1,12 @@
-import { Heading, Button, Placeholder, Row, Grid, VStack, List } from "rsuite";
+import { useEffect, useState } from "react";
+import { Grid, Heading, List, Placeholder, Row, VStack } from "rsuite";
 import { getUser } from "../App";
-import { useState, useEffect } from "react";
-import { getLibrary } from "../Util/Network";
-import ItemTile from "../Components/ItemTile";
-import { playItem } from "../Util/Helpers";
 import { getItems, getLatestMedia } from "../Client";
-import type { BaseItemDto, BaseItemKind, BaseItemDtoQueryResult } from "../Client/index";
+import type { BaseItemDto, BaseItemDtoQueryResult } from "../Client/index";
 import { ItemListEntry } from "../Components/ItemListEntry";
-import { useAppDispatch } from "../store/hooks";
-import { setPlaybackState } from "../store/slices/playbackSlice";
-import { setQueue } from "../store/slices/queueSlice";
+import ItemTile from "../Components/ItemTile";
 import { upsertTrackItems } from "../Util/ItemCache";
+import { getLibrary } from "../Util/Network";
 
 export default function Home() {
   return (
