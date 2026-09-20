@@ -537,7 +537,7 @@ export default function PlayBar() {
         className="playback-audio"
         ref={audioRef}
         crossOrigin="anonymous"
-        src={`${storage.get("serverURL")}/Audio/${playbackState?.item?.Id}/Universal?itemId=${playbackState?.item?.Id}&deviceId=${storage.get("DeviceId")}&userId=${getUser()?.Id}&Container=opus,webm|opus,ts|mp3,mp3,aac,m4a|aac,m4b|aac,flac,webma,webm|webma,wav,ogg&api_key=${storage.get("AccessToken")}`}
+        src={`${storage.get("serverURL")}/Audio/${playbackState?.item?.Id}/Universal?itemId=${playbackState?.item?.Id}&deviceId=${storage.get("DeviceId")}&userId=${getUser()?.Id}&Container=opus,webm|opus,ts|mp3,mp3,aac,m4a|aac,m4b|aac,flac,webma,webm|webma,wav,ogg&ApiKey=${storage.get("AccessToken")}`}
         playsInline={true}
         onEnded={(e) => {
           if (repeat === "one") {

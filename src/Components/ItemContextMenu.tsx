@@ -221,7 +221,7 @@ export default function ItemContextMenu({
         icon: "link",
         label: "Copy Stream URL",
         action: () => {
-          copy(`${storage.get("serverURL")}/Items/${item.Id}/Download?api_key=${storage.get("AccessToken")}`);
+          copy(`${storage.get("serverURL")}/Items/${item.Id}/Download?ApiKey=${storage.get("AccessToken")}`);
         }
       });
     }
